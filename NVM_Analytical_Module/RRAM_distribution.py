@@ -10,18 +10,24 @@ cell_HRS_mu = sys.argv[3]
 cell_HRS_var = sys.argv[4] 
 RRAM_size = sys.argv[5]
 vol = 0.3 #voltage
-x_axis = []
+#x_axis = []
 y_axis = []
+LRS = []
+
 
 def print_cur_current(a, b, func, mu, variance):
 	sigma = math.sqrt(variance)
 	x = np.arange(a,b,(b-a)/10000)
-	return plt.plot(0.3/x, [func(each, mu, variance) for each in x])
-	
+	plt.plot(0.3/x, [func(each, mu, variance) for each in x])
+#	x_axis = 0.3/x
+	y_axis = [func(each, mu, variance) for each in x]
+	return y_axis
+
+
 def print_cur(a, b, func, mu, variance):
 	sigma = math.sqrt(variance)
 	x = np.arange(a,b,(b-a)/10000)
-	return plt.plot(x, [func(each, mu, variance) for each in x])
+	plt.plot(x, [func(each, mu, variance) for each in x])
 
 #f(x) = (1/sigma*math.sqrt(2pi))* exp(-(x-m)^2/2sigma^2)
 #http://www2.kuas.edu.tw/prof/tsungo/www/Publish/Normal%20Distribution.pdf
@@ -42,10 +48,13 @@ def cal_area(lowerbnd, upperbnd, mu, var):
 	return integral(lowerbnd, upperbnd, pdf, mu, var)
 
 
-
+distr = []
 #print_cur(1, 25000, pdf, float(cell_LRS_mu) , float(cell_LRS_var))  
-plt1 = print_cur_current(1, 25000, pdf, float(cell_LRS_mu) , float(cell_LRS_var))  
-plt2 = print_cur_current(1, 25000, pdf, float(cell_HRS_mu) , float(cell_HRS_var))  
+distr.append(print_cur_current(1, 25000, pdf, float(cell_LRS_mu) , float(cell_LRS_var)))
+distr.append(print_cur_current(1, 25000, pdf, float(cell_HRS_mu) , float(cell_HRS_var)))
+print(len(distr))
+print(len(distr[0]))
+
 
 #plt.xscale('log')
 plt.axis([-0.01, 0.15, 0, 2])
