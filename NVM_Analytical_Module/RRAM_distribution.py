@@ -18,7 +18,7 @@ LRS = []
 def print_cur_current(a, b, func, mu, sig):
 	x = np.arange(a,b,(b-a)/10000)
 	plt.plot(0.3/x, [func(each, mu, sig) for each in x])
-#	x_axis = 0.3/x
+	#x_axis = 0.3/x
 	y_axis = [func(each, mu, sig) for each in x]
 	return y_axis
 
@@ -30,9 +30,10 @@ def print_cur(a, b, func, mu, sigma):
 #f(x) = (1/sigma*math.sqrt(2pi))* exp(-(x-m)^2/2sigma^2)
 #http://www2.kuas.edu.tw/prof/tsungo/www/Publish/Normal%20Distribution.pdf
 def pdf(x, mu, sig):
-	return 1/(sig * np.sqrt(2 * np.pi)) * np.exp(-(np.log10(x) - mu)**2 / (2 * sig**2) )
+	return 1/(sig * np.sqrt(2 * np.pi)) * np.exp(-(np.log(x) - mu)**2 / (2 * sig**2) )
 	#return math.exp(-(np.log10(x)-mu) ** 2 / (2 * (sig ** 2))) / (math.sqrt(2*math.pi) * sig)
-
+def pdf_inverse(x, mu, sig):
+	return 1/(sig * np.sqrt(2 * np.pi)) * np.exp(-(np.log(x) - mu)**2 / (2 * sig**2) )
 
 def sum_func_xk(xk, func, mu, sig):
 	return sum([func(each, mu, sig) for each in xk])
@@ -46,18 +47,18 @@ def integral(a, b, func, mu, sig):
 def cal_area(lowerbnd, upperbnd, mu, sig): 
 	return integral(lowerbnd, upperbnd, pdf, mu, sig)
 
-
 distr = []
-#print_cur(1, 100, pdf, float(cell_LRS_mu) , float(cell_LRS_sig))  
-#print_cur(1, 10000, pdf, float(cell_HRS_mu) , float(cell_HRS_sig))  
-distr.append(print_cur_current(1, 10000, pdf, float(cell_LRS_mu) , float(cell_LRS_sig)))
-distr.append(print_cur_current(1, 10000, pdf, float(cell_HRS_mu) , float(cell_HRS_sig)))
-print(len(distr))
-print(len(distr[0]))
-print(cal_area(1,100, 1.34, 0.06))
+#print_cur(1, 10000, pdf, float(cell_LRS_mu)*np.log(10) , float(cell_LRS_sig)*np.log(10))  
+#print_cur(1, 10000, pdf, float(cell_HRS_mu)*np.log(10) , float(cell_HRS_sig)*np.log(10))  
+print_cur(1, 1000000, pdf, (np.log(0.3)-float(cell_LRS_mu)*np.log(10)) , float(cell_LRS_sig)*np.log(10))  
+#print_cur(1, 10000, pdf, float(cell_HRS_mu)*np.log(10) , float(cell_HRS_sig)*np.log(10))  
+#distr.append(print_cur_current(1, 10000, pdf, float(cell_LRS_mu) , float(cell_LRS_sig)))
+#distr.append(print_cur_current(1, 10000, pdf, float(cell_HRS_mu) , float(cell_HRS_sig)))
+#print(len(distr))
+#print(len(distr[0]))
 
-#plt.xscale('log')
-plt.axis([0,0.025, 0, 8])
+plt.xscale('log')
+#plt.axis([0,100000, 0, 8])
 plt.show()	
 
 
