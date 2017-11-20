@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.mlab as mlab
 import math
 import sys
+import mpl_toolkits.mplot3d
 
 cell_LRS_mu = 1.34*np.log(10)
 cell_LRS_sig = 0.06*np.log(10)  
@@ -32,23 +33,20 @@ def pdf_log(x, mu, sig): ##resistance
 def pdf_current(x, mu, sig): ##current
 	return (1/x/(sig * np.sqrt(2 * np.pi))) * np.exp(-(np.log(vol/x) - mu)**2 / (2 * sig**2) )
 
-def pdf_current_comb(i_L, i_H):
-  pdf_L= (1/(i_L * float(cell_LRS_sig) * np.sqrt(2 * np.pi))) * np.exp(-(np.log(vol/i_L) - float(cell_LRS_mu) )**2 / (2 * float(cell_LRS_sig) **2) )
-  pdf_H= (1/(i_H * float(cell_HRS_sig)  * np.sqrt(2 * np.pi))) * np.exp(-(np.log(vol/i_H) - float(cell_HRS_mu) )**2 / (2 * float(cell_HRS_sig) **2) )
-  return pdf_L * pdf_H
+def pdf_LRS_current(x): ## LRS current
+  pdf_L= (1/(x * float(cell_LRS_sig) * np.sqrt(2 * np.pi))) * np.exp(-(np.log(vol/x) - float(cell_LRS_mu) )**2 / (2 * float(cell_LRS_sig) **2) )
+  return pdf_L
+def pdf_HRS_current(x): ## HRS current
+  pdf_H= (1/(x * float(cell_HRS_sig)  * np.sqrt(2 * np.pi))) * np.exp(-(np.log(vol/x) - float(cell_HRS_mu) )**2 / (2 * float(cell_HRS_sig) **2) )
+  return pdf_H
 
-def pdf_current_comb_inte(i, k, ind):
-  if ind == 0:
-    pdf_L= (1/(i * float(cell_LRS_sig) * np.sqrt(2 * np.pi))) * np.exp(-(np.log(vol/i) - float(cell_LRS_mu) )**2 / (2 * float(cell_LRS_sig) **2) )
-    pdf_H= (1/((k-i) * float(cell_LRS_sig)  * np.sqrt(2 * np.pi))) * np.exp(-(np.log(vol/(k-i)) - float(cell_LRS_mu) )**2 / (2 * float(cell_LRS_sig) **2) )
-  elif ind == 1:
-    pdf_L= (1/(i * float(cell_LRS_sig) * np.sqrt(2 * np.pi))) * np.exp(-(np.log(vol/i) - float(cell_LRS_mu) )**2 / (2 * float(cell_LRS_sig) **2) )
-    pdf_H= (1/((k-i) * float(cell_HRS_sig)  * np.sqrt(2 * np.pi))) * np.exp(-(np.log(vol/(k-i)) - float(cell_HRS_mu) )**2 / (2 * float(cell_HRS_sig) **2) )
-  else:
-    pdf_L= (1/(i * float(cell_HRS_sig) * np.sqrt(2 * np.pi))) * np.exp(-(np.log(vol/i) - float(cell_HRS_mu) )**2 / (2 * float(cell_HRS_sig) **2) )
-    pdf_H= (1/((k-i) * float(cell_HRS_sig)  * np.sqrt(2 * np.pi))) * np.exp(-(np.log(vol/(k-i)) - float(cell_HRS_mu) )**2 / (2 * float(cell_HRS_sig) **2) )
-    
-  return pdf_L * pdf_H
+def pdf_current_comb(i_array):
+  ans = 1
+#  for i in range(a):
+#    ans *= pdf_L
+#  for i in range(b):
+#    ans *= pdf_H
+  return ans
 
     
 
@@ -60,7 +58,7 @@ def integral(a, b, func, mu, sig):
 	return integrate.simps(pdf, xk)
 
 def integral_comb_area(a, b, func):
-  return integrate.nquad(func, [[0.000001, 0.1],[0.000001, 0.1]])
+  return integrate.nquad(func, [[0.000001, 0.1],[0.000001, 0.1]])[0]
 
 def integral_comb_cur(a, b, ind, k):
   #print(k)
@@ -70,22 +68,35 @@ def integral_comb_cur(a, b, ind, k):
   pdf = pdf_current_comb_inte(xk, k, ind)
   return integrate.simps(pdf, xk)
   
+#'''
+#3D curve
+x = np.arange(0.00001, 0.1, 0.0001)
+y = np.arange(0.00001, 0.1, 0.0001)
+x, y = np.meshgrid(x, y )
+z = pdf_current_comb(x, y)
+ax = plt.subplot(111,projection='3d')
+ax.plot_surface(x,y,z,rstride=2,cstride=1,cmap=plt.cm.coolwarm,alpha=0.8)  
+#'''
+# a = numb of  LRS cell 
+# b = numb of  HRS cell 
+#for a in range(int(RRAM_size)+1):
+#  b = int(RRAM_size) - a
+#  x = np.arange(0.00001, 0.1, 0.0001)
+#  y = np.arange(0.00001, 0.1, 0.0001)
+#  x, y = np.meshgrid(x, y )
+#  z = pdf_current_comb(x, y, a, b)
+#  ax = plt.subplot(111,projection='3d')
+#  ax.plot_surface(x,y,z,rstride=2,cstride=1,cmap=plt.cm.coolwarm,alpha=0.8)  
+   
+  
+
 
 
 
 #print_cur(0.000001,0.1, pdf_current, float(cell_LRS_mu), float(cell_LRS_sig))
 #print_cur(0.000001,0.1, pdf_current, float(cell_HRS_mu), float(cell_HRS_sig))
-print_cur_comb(0.00001, 0.1, 1, integral_comb_cur)
-print_cur_comb(0.00001, 0.1, 0, integral_comb_cur)
-print_cur_comb(0.00001, 0.1, 2, integral_comb_cur)
-#print_cur(0.001,1, pdf_log, float(cell_LRS_current_mu), float(cell_LRS_sig))
-
-#print_cur(1,1000, pdf_log, float(cell_LRS_mu), float(cell_LRS_sig))
-#print_cur(0.00001,0.1, pdf_current, float(cell_LRS_mu), float(cell_LRS_sig))
-#print_cur(0.00001,0.1, pdf_current, float(cell_HRS_mu), float(cell_HRS_sig))
-#print(cell_LRS_mu)
-print(integral(0.00001,0.1, pdf_current, float(cell_LRS_mu), float(cell_LRS_sig)))
-print(integral(0.00001,0.1, pdf_current, float(cell_HRS_mu), float(cell_HRS_sig)))
+#print(integral(0.00001,0.1, pdf_current, float(cell_LRS_mu), float(cell_LRS_sig)))
+#print(integral(0.00001,0.1, pdf_current, float(cell_HRS_mu), float(cell_HRS_sig)))
 print(integral_comb_area(0.00001,0.1, pdf_current_comb))
 
 #plt.xscale('log')
