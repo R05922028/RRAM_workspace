@@ -133,14 +133,7 @@ for i in x:
       ans += ans_1
 print("10->11",ans)
 
-#print_cur(0.000001,0.1, pdf_LRS_current, float(cell_LRS_mu), float(cell_LRS_sig))
-#print_cur(0.000001,0.1, pdf_HRS_current, float(cell_HRS_mu), float(cell_HRS_sig))
-#print(integral(0.00001,0.1, pdf_current, float(cell_LRS_mu), float(cell_LRS_sig)))
-#print(integral(0.00001,0.1, pdf_current, float(cell_HRS_mu), float(cell_HRS_sig)))
-#print(integral_comb_area(0.00001,0.1, pdf_current_comb))
 
-#plt.xscale('log')
-#plt.axis([0.01,100, 0, 0.2])
 plt.show()	
 
 
