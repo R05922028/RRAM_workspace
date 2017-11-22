@@ -44,7 +44,6 @@ for HRS_cell_num_A in range(int(RRAM_size)): ##A
     LRS_cell_num_B = int(RRAM_size) - HRS_cell_num_B
   #  print("HB:",HRS_cell_num_B)
   #  print("LB:",LRS_cell_num_B)
-    combination_compare(HRS_cell_num_A, LRS_cell_num_A, HRS_cell_num_B, LRS_cell_num_B )  
 
 ##2-cell  
 x = np.arange(0.00001, 0.1, 0.0001)
