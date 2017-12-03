@@ -7,10 +7,10 @@ import math
 import sys
 from bisect import bisect
 
-cell_LRS_mu = 1.34
-cell_LRS_sig = 0.06  
-cell_HRS_mu = 2.62 
-cell_HRS_sig = 0.38
+cell_LRS_mu = 1.34*np.log(10)
+cell_LRS_sig = 0.06*np.log(10) 
+cell_HRS_mu = 2.62*np.log(10) 
+cell_HRS_sig = 0.38*np.log(10)
 vol = 0.3 #voltage
 RRAM_size = sys.argv[1]
 
@@ -20,12 +20,12 @@ RRAM_size = sys.argv[1]
 ##------resistance--------##
 
 def pdf_log(x, mu, sig): 
-	return 1/x/(sig * np.sqrt(2 * np.pi)) * np.exp(-(np.log10(x) - mu)**2 / (2 * sig**2) )
+	return 1/x/(sig * np.sqrt(2 * np.pi)) * np.exp(-(np.log(x) - mu)**2 / (2 * sig**2) )
 
 ##-------current----------##
 
 def pdf_current(x, mu, sig): ##current
-	return (1/x/(sig * np.sqrt(2 * np.pi))) * np.exp(-(np.log10(vol/x) - mu)**2 / (2 * sig**2) )
+	return (1/x/(sig * np.sqrt(2 * np.pi))) * np.exp(-(np.log(vol/x) - mu)**2 / (2 * sig**2) )
 
 ##-------show curve-------##
 
@@ -52,8 +52,8 @@ cdf_LRS_y = []
 cdf_HRS_x = []
 cdf_HRS_y = []
 def cdf_current(a, b, ind):
-  h = (b-a)/float(1000)
-  xk = [a + i*h for i in range (1,1000)] 
+  h = (b-a)/float(3000)
+  xk = [a + i*h for i in range (1,3000)] 
   xk = np.array(xk)
   for i in range(len(xk)):
     if ind == 0:
@@ -65,17 +65,16 @@ def cdf_current(a, b, ind):
       cdf_HRS_x.append(xk[i])
       cdf_HRS_y.append(prob)
 
-cdf_current(0.00001, 0.1, 0) ## LRS
-cdf_current(0.00001, 0.1, 1) ## HRS
-#print(cdf_LRS_x)      
-#print(len(cdf_HRS_x))    
+cdf_current(0.00001, 0.15, 0) ## LRS
+cdf_current(0.00001, 0.15, 1) ## HRS
+#print(cdf_HRS_y)    
 
 #------calculate end-----##
 
 
 #------monte-carlo-------##
 
-N = 10000000
+N = 10000
 current_L = np.random.rand(N)
 current_H = np.random.rand(N)
 current_L = current_L * 100
@@ -95,11 +94,11 @@ def I_total(num_L, num_H):
   return total 
   
 
-sample_current = []
 
 for num in range(int(RRAM_size)+1):
   a = num
   b = int(RRAM_size) - num
+  sample_current = []
   print("Now: a->",a," b->",b)
   for i in range(N):
     cur_total = I_total(a,b)
