@@ -44,6 +44,8 @@ def integral(a, b, func, mu, sig):
 
 #print_cur(0.00001,0.1,pdf_current,cell_LRS_mu, cell_LRS_sig)
 #print_cur(0.00001,0.1,pdf_current,cell_HRS_mu, cell_HRS_sig)
+#print(integral(0.000001,0.1, pdf_current, float(cell_LRS_mu), float(cell_LRS_sig)))
+
 
 ##-----calculate cdf-----##
 
@@ -52,8 +54,8 @@ cdf_LRS_y = []
 cdf_HRS_x = []
 cdf_HRS_y = []
 def cdf_current(a, b, ind):
-  h = (b-a)/float(3000)
-  xk = [a + i*h for i in range (1,3000)] 
+  h = (b-a)/float(5000)
+  xk = [a + i*h for i in range (1,5000)] 
   xk = np.array(xk)
   for i in range(len(xk)):
     if ind == 0:
@@ -65,20 +67,15 @@ def cdf_current(a, b, ind):
       cdf_HRS_x.append(xk[i])
       cdf_HRS_y.append(prob)
 
-cdf_current(0.00001, 0.15, 0) ## LRS
-cdf_current(0.00001, 0.15, 1) ## HRS
-#print(cdf_HRS_y)    
+cdf_current(0.00001, 0.03, 0) ## LRS
+cdf_current(0.00001, 0.03, 1) ## HRS
 
 #------calculate end-----##
 
 
 #------monte-carlo-------##
 
-N = 10000
-current_L = np.random.rand(N)
-current_H = np.random.rand(N)
-current_L = current_L * 100
-current_H = current_H * 100
+N = 1000000
 
 #print(current_L)
 #print(cdf_HRS_x[0])
@@ -86,11 +83,11 @@ current_H = current_H * 100
 def I_total(num_L, num_H):
   total = 0
   for cnt_L in range(num_L):
-    ind = bisect(cdf_LRS_y, np.random.rand(1))
-    total = total + cdf_LRS_x[ind]
+    ind_L = bisect(cdf_LRS_y, np.random.rand(1))
+    total = total + cdf_LRS_x[ind_L-1]
   for cnt_H in range(num_H):
-    ind = bisect(cdf_HRS_y, np.random.rand(1))
-    total = total + cdf_HRS_x[int(np.random.rand(1) * 100)]
+    ind_H = bisect(cdf_HRS_y, np.random.rand(1))
+    total = total + cdf_HRS_x[ind_H-1]
   return total 
   
 
@@ -104,7 +101,7 @@ for num in range(int(RRAM_size)+1):
     cur_total = I_total(a,b)
     sample_current.append(cur_total)
 
-  #print(sample_current)
+  print("sample-end...")
 
   x = []
   y = []
