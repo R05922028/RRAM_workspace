@@ -37,15 +37,15 @@ def print_cur(a, b, func, mu, sigma):
 ##-------integral---------##
 
 def integral(a, b, func, mu, sig):
-  h = (b-a)/float(5000)
-  xk = [a + i*h for i in range (1,5000)] 
+  h = (b-a)/float(10000)
+  xk = [a + i*h for i in range (1,10000)] 
   xk = np.array(xk)
   pdf = func(xk, mu, sig)
   return integrate.simps(pdf, xk)
 
 #print_cur(0.00001,0.1,pdf_current,cell_LRS_mu, cell_LRS_sig)
 #print_cur(0.00001,0.1,pdf_current,cell_HRS_mu, cell_HRS_sig)
-print(integral(0.000001,0.1, pdf_current, float(cell_LRS_mu), float(cell_LRS_sig)))
+#print(integral(0.000001,0.1, pdf_current, float(cell_LRS_mu), float(cell_LRS_sig)))
 
 
 ##-----calculate cdf-----##
@@ -121,8 +121,9 @@ for num in range(int(RRAM_size)+1):
   for out_x in range(len(x)):
       fout.write(str(x[out_x])+','+str(y[out_x])+'\n') 
   #-------output csv end--------##
-  ''' 
-
+  '''
+  #X_total.append(x)
+  #Y_total.append(y)
   Data.append([])
   for i in range(len(x)):
     Data[Data_cnt].append((x[i], y[i]))
@@ -138,12 +139,12 @@ for num in range(int(RRAM_size)+1):
 #------monte-carlo-------##
 for i in range(len(Data)):
   Data[i] = sorted(Data[i])
+
 #--------Error part--------##
 min_val = 1000
 min_idx_i = 0
 min_idx_j = 0
 for i in range(len(Data[0])):
-  #if Data[0][i][0] >= Data[1][0][0] :
   for j in range(len(Data[1])):
     res_x = abs(Data[0][i][0]-Data[1][j][0])
     res_y = abs(Data[0][i][1]-Data[1][j][1])
