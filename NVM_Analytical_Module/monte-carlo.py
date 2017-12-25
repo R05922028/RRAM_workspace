@@ -135,29 +135,41 @@ for num in range(int(RRAM_size)+1):
     plt.plot(x, y, 'go', alpha=0.3)    
   
   print("Plot.end")
+Data_sorted = Data
 #------monte-carlo-------##
-for i in range(len(Data)):
-  Data[i] = sorted(Data[i])
-#--------Error part--------##
-min_val = 1000
-min_idx_i = 0
-min_idx_j = 0
-for i in range(len(Data[0])):
-  #if Data[0][i][0] >= Data[1][0][0] :
-  for j in range(len(Data[1])):
-    res_x = abs(Data[0][i][0]-Data[1][j][0])
-    res_y = abs(Data[0][i][1]-Data[1][j][1])
-    res = res_x + res_y
-    if res < min_val:
-      min_val = res
-      min_idx_i = i
-      min_idx_j = j
-print(Data[0][min_idx_i])
-print(min_idx_i)
-print(Data[1][min_idx_j])
-print(min_idx_j)
-print(Data[1])
+for i in range(len(Data_sorted)):
+  Data_sorted[i] = sorted(Data_sorted[i])
 
+#--------Error part--------##
+for idx in range(int(RRAM_size)):
+  err_rate_left = 0
+  err_rate_right = 0
+  err_rate = 0
+  min_err = 100
+  min_ref_cur = 0
+  step = np.arange(float(Data_sorted[idx+1][0][0]), float(Data_sorted[idx][len(Data_sorted[0])-1][0]), 0.001)
+  for i in range(len(step)):
+    err_cnt_left = 0
+    err_cnt_right = 0
+    for j in range(len(Data[idx])): #left
+      if Data[idx][j][0] > step[i]:
+        err_cnt_left += 1
+    for k in range(len(Data[idx+1])): #right
+      if Data[idx+1][k][0] < step[i]:
+        err_cnt_right += 1
+    err_rate_left = err_cnt_left / len(Data[idx])
+    err_rate_right = err_cnt_right / len(Data[idx+1])
+    err_rate = err_rate_left + err_rate_right
+    if err_rate < min_err:
+      min_err_l = err_rate_left
+      min_err_r = err_rate_right
+      min_err = err_rate
+      min_ref_cur = step[i]
+  
+  print("err_rate :",min_err)
+  print(idx,"-->", idx+1, ":", min_err_l)
+  print(idx+1,"-->", idx, ":", min_err_r)
+  print("ref_cur: ", min_ref_cur)
 #--------Error part--------##
 
 plt.show()

@@ -37,15 +37,15 @@ def print_cur(a, b, func, mu, sigma):
 ##-------integral---------##
 
 def integral(a, b, func, mu, sig):
-  h = (b-a)/float(10000)
-  xk = [a + i*h for i in range (1,10000)] 
+  h = (b-a)/float(5000)
+  xk = [a + i*h for i in range (1,5000)] 
   xk = np.array(xk)
   pdf = func(xk, mu, sig)
   return integrate.simps(pdf, xk)
 
 #print_cur(0.00001,0.1,pdf_current,cell_LRS_mu, cell_LRS_sig)
 #print_cur(0.00001,0.1,pdf_current,cell_HRS_mu, cell_HRS_sig)
-#print(integral(0.000001,0.1, pdf_current, float(cell_LRS_mu), float(cell_LRS_sig)))
+print(integral(0.000001,0.1, pdf_current, float(cell_LRS_mu), float(cell_LRS_sig)))
 
 
 ##-----calculate cdf-----##
@@ -121,9 +121,8 @@ for num in range(int(RRAM_size)+1):
   for out_x in range(len(x)):
       fout.write(str(x[out_x])+','+str(y[out_x])+'\n') 
   #-------output csv end--------##
-  '''
-  #X_total.append(x)
-  #Y_total.append(y)
+  ''' 
+
   Data.append([])
   for i in range(len(x)):
     Data[Data_cnt].append((x[i], y[i]))
@@ -136,29 +135,41 @@ for num in range(int(RRAM_size)+1):
     plt.plot(x, y, 'go', alpha=0.3)    
   
   print("Plot.end")
+Data_sorted = Data
 #------monte-carlo-------##
-for i in range(len(Data)):
-  Data[i] = sorted(Data[i])
+for i in range(len(Data_sorted)):
+  Data_sorted[i] = sorted(Data_sorted[i])
 
 #--------Error part--------##
-min_val = 1000
-min_idx_i = 0
-min_idx_j = 0
-for i in range(len(Data[0])):
-  for j in range(len(Data[1])):
-    res_x = abs(Data[0][i][0]-Data[1][j][0])
-    res_y = abs(Data[0][i][1]-Data[1][j][1])
-    res = res_x + res_y
-    if res < min_val:
-      min_val = res
-      min_idx_i = i
-      min_idx_j = j
-print(Data[0][min_idx_i])
-print(min_idx_i)
-print(Data[1][min_idx_j])
-print(min_idx_j)
-print(Data[1])
-
+for idx in range(int(RRAM_size)):
+  err_rate_left = 0
+  err_rate_right = 0
+  err_rate = 0
+  min_err = 100
+  min_ref_cur = 0
+  step = np.arange(float(Data_sorted[idx+1][0][0]), float(Data_sorted[idx][len(Data_sorted[0])-1][0]), 0.001)
+  for i in range(len(step)):
+    err_cnt_left = 0
+    err_cnt_right = 0
+    for j in range(len(Data[idx])): #left
+      if Data[idx][j][0] > step[i]:
+        err_cnt_left += 1
+    for k in range(len(Data[idx+1])): #right
+      if Data[idx+1][k][0] < step[i]:
+        err_cnt_right += 1
+    err_rate_left = err_cnt_left / len(Data[idx])
+    err_rate_right = err_cnt_right / len(Data[idx+1])
+    err_rate = err_rate_left + err_rate_right
+    if err_rate < min_err:
+      min_err_l = err_rate_left
+      min_err_r = err_rate_right
+      min_err = err_rate
+      min_ref_cur = step[i]
+  
+  print("err_rate :",min_err)
+  print(idx,"-->", idx+1, ":", min_err_l)
+  print(idx+1,"-->", idx, ":", min_err_r)
+  print("ref_cur: ", min_ref_cur)
 #--------Error part--------##
 
 plt.show()
