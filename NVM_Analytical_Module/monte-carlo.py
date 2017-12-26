@@ -127,12 +127,12 @@ for num in range(int(RRAM_size)+1):
   for i in range(len(x)):
     Data[Data_cnt].append((x[i], y[i]))
   Data_cnt += 1
-  if num%3 == 0:
-    plt.plot(x, y, 'ro', alpha=0.3)
-  elif num%3 == 1:
-    plt.plot(x, y, 'bo', alpha=0.3)
-  elif num%3 == 2:
-    plt.plot(x, y, 'go', alpha=0.3)    
+  #if num%3 == 0:
+  #  plt.plot(x, y, 'ro', alpha=0.3)
+  #elif num%3 == 1:
+  #  plt.plot(x, y, 'bo', alpha=0.3)
+  #elif num%3 == 2:
+  #  plt.plot(x, y, 'go', alpha=0.3)    
   
   print("Plot.end")
 Data_sorted = Data
@@ -141,6 +141,7 @@ for i in range(len(Data_sorted)):
   Data_sorted[i] = sorted(Data_sorted[i])
 
 #--------Error part--------##
+ref_cur = []
 for idx in range(int(RRAM_size)):
   err_rate_left = 0
   err_rate_right = 0
@@ -165,11 +166,28 @@ for idx in range(int(RRAM_size)):
       min_err_r = err_rate_right
       min_err = err_rate
       min_ref_cur = step[i]
-  
+  ref_cur.append(min_ref_cur)
+  '''
   print("err_rate :",min_err)
   print(idx,"-->", idx+1, ":", min_err_l)
   print(idx+1,"-->", idx, ":", min_err_r)
   print("ref_cur: ", min_ref_cur)
-#--------Error part--------##
+  '''
+for idx in range(int(RRAM_size)):
+  for idx_com in range(idx+1, int(RRAM_size)+1):
+    cnt_left = 0
+    cnt_right = 0
+    for i in range(len(Data[idx])):
+      if Data[idx][i][0] > float(ref_cur[idx_com-1]):
+        cnt_left += 1
+    for j in range(len(Data[idx_com])):
+      if Data[idx_com][j][0] < float(ref_cur[idx_com-1]):
+        cnt_right += 1
+    err_left = cnt_left / len(Data[idx])
+    err_right = cnt_right / len(Data[idx_com])
+    print(idx,"-->", idx_com, ":", err_left)
+    print(idx_com,"-->", idx, ":", err_right)
+    
+#-------Error part--------##
 
 plt.show()
