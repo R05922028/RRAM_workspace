@@ -204,9 +204,9 @@ for ref in range(len(ref_cur)):
     fout.write(str(idx_left)+','+str(ref+1)+','+str(err_left)+'\n')
   for idx_right in range(ref+1,int(RRAM_size)+1):
     cnt_right = 0
-    for j in range(len(DAta[idx_right])):
+    for j in range(len(Data[idx_right])):
       if Data[idx_right][j][0] < ref_cur[ref]:
-        cnt_right += 0
+        cnt_right += 1
     err_right = cnt_right / len(Data[idx_right])
     fout.write(str(idx_right)+','+str(ref)+','+str(err_right)+'\n')
 
