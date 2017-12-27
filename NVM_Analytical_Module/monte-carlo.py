@@ -127,12 +127,12 @@ for num in range(int(RRAM_size)+1):
   for i in range(len(x)):
     Data[Data_cnt].append((x[i], y[i]))
   Data_cnt += 1
-  #if num%3 == 0:
-  #  plt.plot(x, y, 'ro', alpha=0.3)
-  #elif num%3 == 1:
-  #  plt.plot(x, y, 'bo', alpha=0.3)
-  #elif num%3 == 2:
-  #  plt.plot(x, y, 'go', alpha=0.3)    
+  if num%3 == 0:
+    plt.plot(x, y, 'ro', alpha=0.3)
+  elif num%3 == 1:
+    plt.plot(x, y, 'bo', alpha=0.3)
+  elif num%3 == 2:
+    plt.plot(x, y, 'go', alpha=0.3)    
   
   print("Plot.end")
 Data_sorted = Data
@@ -167,12 +167,16 @@ for idx in range(int(RRAM_size)):
       min_err = err_rate
       min_ref_cur = step[i]
   ref_cur.append(min_ref_cur)
+  print(len(ref_cur))
   '''
   print("err_rate :",min_err)
   print(idx,"-->", idx+1, ":", min_err_l)
   print(idx+1,"-->", idx, ":", min_err_r)
   print("ref_cur: ", min_ref_cur)
   '''
+fout = open("error_rate.csv", "a+")
+fout.write(str(RRAM_size)+'\n')
+'''
 for idx in range(int(RRAM_size)):
   for idx_com in range(idx+1, int(RRAM_size)+1):
     cnt_left = 0
@@ -185,9 +189,28 @@ for idx in range(int(RRAM_size)):
         cnt_right += 1
     err_left = cnt_left / len(Data[idx])
     err_right = cnt_right / len(Data[idx_com])
+    fout.write(str(idx)+','+str(idx_com)+','+str(err_left)+'\n')
+    fout.write(str(idx_com)+','+str(idx)+','+str(err_right)+'\n')
     print(idx,"-->", idx_com, ":", err_left)
     print(idx_com,"-->", idx, ":", err_right)
-    
+'''
+for ref in range(len(ref_cur)):
+  for idx_left in range(0,ref+1):
+    cnt_left = 0
+    for i in range(len(Data[idx_left])):
+      if Data[idx_left][i][0] > ref_cur[ref]:
+        cnt_left += 1
+    err_left = cnt_left / len(Data[idx_left])
+    fout.write(str(idx_left)+','+str(ref+1)+','+str(err_left)+'\n')
+  for idx_right in range(ref+1,int(RRAM_size)+1):
+    cnt_right = 0
+    for j in range(len(DAta[idx_right])):
+      if Data[idx_right][j][0] < ref_cur[ref]:
+        cnt_right += 0
+    err_right = cnt_right / len(Data[idx_right])
+    fout.write(str(idx_right)+','+str(ref)+','+str(err_right)+'\n')
+
+fout.close()    
 #-------Error part--------##
 
 plt.show()
