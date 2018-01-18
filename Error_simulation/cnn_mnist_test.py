@@ -15,7 +15,7 @@ y_ = tf.placeholder(tf.float32, shape=[None, 10], name='y_')
 x_image = tf.reshape(x, [-1, 28, 28, 1])
 
 with tf.name_scope('Conv1'):
-    W_conv1	= tf.Variable(tf.truncated_normal([5,5,1,32], stddev=0.1), name='weight') # 5x5, input_size=1, output_size=32
+    W_conv1 = tf.Variable(tf.truncated_normal([5,5,1,32], stddev=0.1), name='weight') # 5x5, input_size=1, output_size=32
     b_conv1 = tf.Variable(tf.zeros([32]), name='bias')
     h_conv1 = tf.nn.conv2d(x_image, W_conv1, strides=[1,1,1,1], padding='SAME', name='Convolution')
     h_conv1 = tf.add(h_conv1, b_conv1, name='Add')
@@ -54,7 +54,7 @@ prediction = tf.identity(h_fcon2, name='prediction')
 
 # initialize Graph
 sess = tf.InteractiveSession()
-init = tf.global_variables_initializer().run()
+init = tf.global_variables_initializer()
 sess.run(init)
 
 # Restore Model
