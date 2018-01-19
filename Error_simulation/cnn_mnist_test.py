@@ -59,7 +59,7 @@ sess.run(init)
 
 # Restore Model
 saver = tf.train.Saver()
-saver.restore(sess, "./model/cnn_model.ckpt")
+saver.restore(sess, "./model/")
 
 # Testing
 ans = tf.placeholder(tf.float32, shape=[None, 10], name='ans')

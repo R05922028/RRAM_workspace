@@ -76,7 +76,7 @@ with tf.name_scope('Dense2'):
         h_fcon2 = tf.matmul(h_drop1, W_fcon2) + b_fcon2
         prediction = h_fcon2
 
-prediction = tf.identity(prediction, name='prediction')
+prediction = tf.identity(h_fcon2, name='prediction')
 
 with tf.name_scope('Train'):
     loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=prediction))
@@ -94,14 +94,16 @@ for step in range(100):
     if step %20 == 0:
         print('Loss:', sess.run(loss, feed_dict={x: batch[0], y_: batch[1]}))
 
+#print(sess.run(W_fcon2))
 # Save model
 saver = tf.train.Saver()
 save_path = saver.save(sess, "./model/cnn_model.ckpt")
 print("Model saved in file: %s" % save_path)
 
 # Testing
+print(mnist.test.labels)
 pre = sess.run(prediction, feed_dict={x: mnist.test.images})
-print(pre)
+#print(pre)
 correct_prediction = tf.equal(tf.argmax(pre,1), tf.argmax(y_,1))
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 print("accuracy: ", sess.run(accuracy, feed_dict={y_:mnist.test.labels}))
