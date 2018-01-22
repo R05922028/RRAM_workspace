@@ -149,13 +149,15 @@ if len(Data_sorted[0]) % 2 ==0:
 else:
   print(Data_sorted[0][int((len(Data_sorted[0])-1)/2)])
 '''
+fout = open("error_rate_2_ref.csv", "a+")
+fout.write(str(RRAM_size)+'\n')
 left_ref = 0
 right_ref = 0
-margin_ref = []
-if int(RRAM_size) < 9:
+level_SA = 8 
+if int(RRAM_size) < level_SA+1:
   ref_cnt = int(RRAM_size)
 else:
-  ref_cnt = 8
+  ref_cnt = level_SA
 for idx in range(ref_cnt):
   if len(Data_sorted[idx]) % 2 ==0:
     left_ref = float(Data_sorted[idx][int(len(Data_sorted[idx])/2)][0])
@@ -178,10 +180,26 @@ for idx in range(ref_cnt):
       if Data[idx_2][j][0] < margin_ref:
         cnt_right += 1
     err_right = cnt_right / len(Data[idx_2])
+    fout.write(str(idx)+','+str(idx_2)+','+str(err_left)+'\n')
+    fout.write(str(idx_2)+','+str(idx)+','+str(err_right)+'\n')
     print(idx,"-->",idx_2,":",err_left)
     print(idx_2,"-->",idx,":",err_right)
   
-
+if int(RRAM_size)>level_SA:
+  for idx_2 in range(ref_cnt+1, int(RRAM_size)+1):
+    cnt_right = 0
+    cnt_left = 0
+    for j in range(len(Data[idx_2])):
+      if Data[idx_2][j][0] < margin_ref:
+        cnt_right += 1
+    cnt_left = len(Data[idx_2]) - cnt_right
+    err_left = cnt_left / len(Data[idx_2])
+    err_right = cnt_right / len(Data[idx_2])
+    fout.write(str(idx_2)+','+str(level_SA-1)+','+str(err_right)+'\n')
+    print(idx_2,"-->",str(level_SA-1),":",err_right)
+    fout.write(str(idx_2)+','+str(level_SA)+','+str(err_left)+'\n')
+    print(idx_2,"-->",str(level_SA),":",err_left)
+  
 
 
 #-------Error part--------##
