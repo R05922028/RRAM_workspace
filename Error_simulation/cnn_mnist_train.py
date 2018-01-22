@@ -14,7 +14,6 @@ def preprocessing(x):
 
 # Create Model
 x = tf.placeholder(tf.float32, shape=[None, 784], name='x')
-x = tf.divide(x, 255.)
 y_ = tf.placeholder(tf.float32, shape=[None, 10], name='y_')
 x_image = tf.reshape(x, [-1, 28, 28, 1])
 
@@ -96,8 +95,9 @@ for step in range(100):
 
 #print(sess.run(W_fcon2))
 # Save model
+#variables = tf.all_variables()
 saver = tf.train.Saver()
-save_path = saver.save(sess, "./model/cnn_model.ckpt")
+save_path = saver.save(sess, "model/cnn_model.ckpt")
 print("Model saved in file: %s" % save_path)
 
 # Testing
@@ -110,5 +110,6 @@ print("accuracy: ", sess.run(accuracy, feed_dict={y_:mnist.test.labels}))
 
 # Visualize
 writer = tf.summary.FileWriter('TensorBoard/', graph=sess.graph)
+tf.train.write_graph(sess.graph_def, 'graph', 'soft.ph',False)
 
 sess.close()
