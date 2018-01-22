@@ -151,6 +151,7 @@ else:
 '''
 left_ref = 0
 right_ref = 0
+margin_ref = []
 if int(RRAM_size) < 9:
   ref_cnt = int(RRAM_size)
 else:
@@ -160,25 +161,26 @@ for idx in range(ref_cnt):
     left_ref = float(Data_sorted[idx][int(len(Data_sorted[idx])/2)][0])
   else:
     left_ref = float(Data_sorted[idx][int((len(Data_sorted[idx])-1)/2)][0])
-  if len(Data_sorted[idx+1]) % 2 ==0:
-    right_ref = float(Data_sorted[idx+1][int(len(Data_sorted[idx+1])/2)][0])
-  else:
-    right_ref = float(Data_sorted[idx+1][int((len(Data_sorted[idx+1])-1)/2)][0])
-  margin_ref = (left_ref + right_ref)/2
-  print("margin:",margin_ref)
-  cnt_left = 0
-  for i in range(len(Data[idx])):
-    if Data[idx][i][0] > margin_ref:
-      cnt_left += 1
-  err_left = cnt_left / len(Data[idx])
-  cnt_right = 0
-  for j in range(len(Data[idx+1])):
-    if Data[idx+1][j][0] < margin_ref:
-      cnt_right += 1
-  err_right = cnt_right / len(Data[idx+1])
-  print(idx,"-->",idx+1,":",err_left)
-  print(idx+1,"-->",idx,":",err_right)
-
+  for idx_2 in range(idx+1,ref_cnt+1):
+    if len(Data_sorted[idx_2]) % 2 ==0:
+      right_ref = float(Data_sorted[idx_2][int(len(Data_sorted[idx_2])/2)][0])
+    else:
+      right_ref = float(Data_sorted[idx_2][int((len(Data_sorted[idx_2])-1)/2)][0])
+    margin_ref=float((left_ref + right_ref)/2)
+  
+    cnt_left = 0
+    for i in range(len(Data[idx])):
+      if Data[idx][i][0] > margin_ref:
+        cnt_left += 1
+    err_left = cnt_left / len(Data[idx])
+    cnt_right = 0
+    for j in range(len(Data[idx_2])):
+      if Data[idx_2][j][0] < margin_ref:
+        cnt_right += 1
+    err_right = cnt_right / len(Data[idx_2])
+    print(idx,"-->",idx_2,":",err_left)
+    print(idx_2,"-->",idx,":",err_right)
+  
 
 
 
