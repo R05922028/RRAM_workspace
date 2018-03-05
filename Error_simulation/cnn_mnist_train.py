@@ -87,7 +87,7 @@ init = tf.global_variables_initializer()
 
 # Training
 sess.run(init)
-for step in range(100):
+for step in range(20000):
     batch = mnist.train.next_batch(100)
     sess.run(train, feed_dict={x: batch[0], y_:batch[1]})
     if step %20 == 0:

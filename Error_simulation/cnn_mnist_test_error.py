@@ -1,8 +1,10 @@
 from tensorflow.examples.tutorials.mnist import input_data
 import tensorflow as tf
 import numpy as np
+import time
 from random import *
 from math import *
+from tqdm import tqdm
 
 def isround(p):
     if uniform(0,1) >= p:
@@ -39,31 +41,19 @@ def roundAndConvert(x, IL, FL, WL):
     arr = convert2TwosComplement(x_round, FL, WL)
     return arr
 
-def f(x, IL, FL, WL):
+def decomposition(x, IL, FL, WL):
     xshape = x.shape 
     x = [roundAndConvert(i, IL, FL, WL) for i in np.nditer(x)]
     x = np.array(x).T 
     return np.float32(x).reshape(((-1,) + xshape))
 
-IL = 3
+start_time = time.time()
+IL = 1
 FL = 3
 WL = IL + FL
 
-'''
-W = tf.Variable(np.arange(12).reshape((2,2,1,3)))
-W = tf.py_func(f, [W, IL, FL, WL], tf.int8)
+batch_size = 512
 
-sess = tf.InteractiveSession()
-tf.global_variables_initializer().run()
-
-print(sess.run(W))
-print('--------------')
-print(sess.run(W[0]))
-print(sess.run(W[1]))
-print(sess.run(W[2]))
-print(sess.run(W[3]))
-
-'''
 mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
 
 # Create Model
@@ -71,44 +61,68 @@ x = tf.placeholder(tf.float32, shape=[None, 784], name='x')
 y_ = tf.placeholder(tf.float32, shape=[None, 10], name='y_')
 x_image = tf.reshape(x, [-1, 28, 28, 1])
 
+
 # ==Convolution layer== #
+    
 with tf.name_scope('Conv1'):
+    with tf.name_scope('Input_Decomposition'):
+        x_image = tf.py_func(decomposition, [x_image, IL, FL, WL], tf.float32)
     with tf.name_scope('Weights'):
         W_conv1	= tf.Variable(tf.truncated_normal([5,5,1,32], stddev=0.1)) # 5x5, input_size=1, output_size=32
-        W_conv1 = tf.py_func(f, [W_conv1, IL, FL, WL], tf.float32) 
+        W_conv1 = tf.py_func(decomposition, [W_conv1, IL, FL, WL], tf.float32) 
     with tf.name_scope('Biases'):
-        b_conv1 = tf.Variable(tf.zeros([32]))
+        b_conv1 = tf.Variable(tf.zeros([32]))     
     with tf.name_scope('Convolution'):
         #h_conv1 = tf.nn.conv2d(x_image, W_conv1, strides=[1,1,1,1], padding='SAME') + b_conv1
         h_conv1_arr = []
+        h_conv1_result = []
         for i in range(WL):
-            h_conv1_arr.append(tf.nn.conv2d(x_image, W_conv1[i], strides=[1,1,1,1], padding='SAME'))
-        '''
-        h_conv1_0 = tf.nn.conv2d(x_image, W_conv1[0], strides=[1,1,1,1], padding='SAME')
-        h_conv1_1 = tf.nn.conv2d(x_image, W_conv1[1], strides=[1,1,1,1], padding='SAME')
-        h_conv1_2 = tf.nn.conv2d(x_image, W_conv1[2], strides=[1,1,1,1], padding='SAME')
-        h_conv1_3 = tf.nn.conv2d(x_image, W_conv1[3], strides=[1,1,1,1], padding='SAME')
-        '''
+            h_conv1_arr.append([])
+            for j in range(WL):
+                h_conv1_arr[i].append(tf.nn.conv2d(x_image[i], W_conv1[j], strides=[1,1,1,1], padding='SAME'))
+            sig = IL - 1
+            h_conv1_result.append(-h_conv1_arr[i][0]*(2**sig))
+            for k in range(1,WL):
+                sig -= 1
+                h_conv1_result[i] += h_conv1_arr[i][k] * (2**sig)
         sig = IL - 1
-        h_conv1 = -h_conv1_arr[0]*(2**sig)
-        
-        
-        for i in range(1,WL):
+        h_conv1 = -h_conv1_result[0]*(2**sig)
+        for k in range(1,WL):
             sig -= 1
-            h_conv1 += h_conv1_arr[i] * (2**sig)
-        
+            h_conv1 += h_conv1_result[k] * (2**sig)
+        h_conv1 += b_conv1
     with tf.name_scope('Relu'):
         h_conv1 = tf.nn.relu(h_conv1) # 28x28x32
 with tf.name_scope('Maxpooling'):
     h_pool1 = tf.nn.max_pool(h_conv1, ksize=[1,2,2,1], strides=[1,2,2,1], padding='SAME') # 14x14x32
 
 with tf.name_scope('Conv2'):
+    #with tf.name_scope('Input_Decompddosition'):
+        #h_pool1 = tf.py_func(decomposition, [h_pool1, IL, FL, WL], tf.float32) 
     with tf.name_scope('Weights'):
         W_conv2 = tf.Variable(tf.truncated_normal([5,5,32,64], stddev=0.1))
+        #W_conv2 = tf.py_func(decomposition, [W_conv2, IL, FL, WL], tf.float32) 
     with tf.name_scope('Biases'):
         b_conv2 = tf.Variable(tf.zeros(([64])))
     with tf.name_scope('Convolution'):
         h_conv2 = tf.nn.conv2d(h_pool1, W_conv2, strides=[1,1,1,1], padding='SAME') + b_conv2
+        '''h_conv2_arr = []
+        h_conv2_result = []
+        for i in range(WL):
+            h_conv2_arr.append([])
+            for j in range(WL):
+                h_conv2_arr[i].append(tf.nn.conv2d(h_pool1[i], W_conv2[j], strides=[1,1,1,1], padding='SAME'))
+            sig = IL - 1
+            h_conv2_result.append(-h_conv2_arr[i][0]*(2**sig))
+            for k in range(1,WL):
+                sig -= 1
+                h_conv2_result[i] += h_conv2_arr[i][k] * (2**sig)
+        sig = IL - 1
+        h_conv2 = -h_conv2_result[0]*(2**sig)
+        for k in range(1,WL):
+            sig -= 1
+            h_conv2 += h_conv2_result[k] * (2**sig) 
+        h_conv2 += b_conv2'''
     with tf.name_scope('Relu'): 
         h_conv2 = tf.nn.relu(h_conv2) # 14x14x64
 with tf.name_scope('Maxpooling'):
@@ -153,5 +167,12 @@ accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 # Visualize
 writer = tf.summary.FileWriter('TensorBoard/', graph=sess.graph)
 
-print("accuracy: ",accuracy.eval(feed_dict={x: mnist.test.images, y_:mnist.test.labels}))
-
+batch_num = int(mnist.test.num_examples / batch_size)
+test_accuracy = 0
+print('total batch:', batch_num)
+for i in tqdm(range(batch_num)):
+    batch = mnist.test.next_batch(batch_size)
+    test_accuracy += accuracy.eval(feed_dict={x: batch[0], y_: batch[1]})
+test_accuracy /= batch_num
+print('accuracy: %g'%test_accuracy)
+print('execution time: %ss' % (time.time() - start_time))
