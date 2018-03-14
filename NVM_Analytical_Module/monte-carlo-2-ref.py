@@ -158,7 +158,7 @@ for RRAM_size in range(1, RRAM_cnt+1):
   fout.write(str(RRAM_size)+'\n')
   left_ref = 0
   right_ref = 0
-  level_SA = 8
+  level_SA = (2**3)-1
    
   if int(RRAM_size) < level_SA+1:
     ref_cnt = int(RRAM_size)
@@ -209,9 +209,21 @@ for RRAM_size in range(1, RRAM_cnt+1):
       print(idx_2,"-->",str(level_SA),":",err_left)
       Err_list[RRAM_size-1][idx_2][int(level_SA)-1] = float(err_right)
       Err_list[RRAM_size-1][idx_2][int(level_SA)] = float(err_left)
+  for row in range(RRAM_size+1):
+    summation = sum(Err_list[RRAM_size-1][row])
+    Err_list[RRAM_size-1][row][row] = 1-summation
+print(Err_list)    
+for i in range(Err_list.shape[0]):
+  for j in range(i+2):
+    prob = Err_list[i][j][0]
+    Err_list[i][j][0] = 0
+    for k in range(i+2):
+      prob += Err_list[i][j][k]
+      Err_list[i][j][k] = prob
 print(Err_list)    
 with open('Err_file.pkl', 'wb') as f:
   pickle.dump(Err_list, f) 
+
 #with open('Err_file.pkl', 'rb') as f:
 #  mynewlist = pickle.load(f)
 #print(mynewlist)
