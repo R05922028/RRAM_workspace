@@ -154,7 +154,7 @@ for RRAM_size in range(1, RRAM_cnt+1):
   else:
     print(Data_sorted[0][int((len(Data_sorted[0])-1)/2)])
   '''
-  fout = open("error_rate_2_ref.csv", "a+")
+  fout = open("error_rate_offset.csv", "a+")
   fout.write(str(RRAM_size)+'\n')
   left_ref = 0
   right_ref = 0
@@ -222,7 +222,7 @@ for i in range(Err_list.shape[0]):
       prob += Err_list[i][j][k]
       Err_list[i][j][k] = prob
 print(Err_list)    
-with open('Err_file.pkl', 'wb') as f:
+with open('Err_file_offset.pkl', 'wb') as f:
   pickle.dump(Err_list, f) 
 
 #with open('Err_file.pkl', 'rb') as f:
