@@ -10,12 +10,18 @@ from bisect import bisect
 import pickle as pk
 import random
 
-cell_LRS_mu = 1.34*np.log(10)
-cell_LRS_sig = 0.06*np.log(10) 
-cell_HRS_mu = 2.62*np.log(10) 
-cell_HRS_sig = 0.38*np.log(10)
-vol = 0.6 #voltage
 RRAM_size = sys.argv[1]
+LRS_mu = sys.argv[2]
+LRS_sig = sys.argv[3]
+HRS_mu = sys.argv[4]
+HRS_sig = sys.argv[5]
+portion = sys.argv[6]
+
+cell_LRS_mu = float(LRS_mu) * np.log(10)
+cell_LRS_sig = float(LRS_sig)*np.log(10) 
+cell_HRS_mu = float(HRS_mu) *np.log(10) 
+cell_HRS_sig = float(HRS_sig)*np.log(10)
+vol = 0.6 #voltage
 sensing_offset = 0 #v
 
 #f(x) = (1/sigma*math.sqrt(2pi))* exp(-(log(x)-m)^2/2sigma^2)
@@ -263,9 +269,9 @@ for u in range(int(sys.argv[1])):
             m[u][i] += [j]*int((err[u][i][j]-err[u][i][j-1])*100.)
         m[u][i] += [i] * (100-len(m[u][i]))
         random.shuffle(m[u][i])
-pk.dump(m, open('Err_file_mean_2.62_var_1_SA_4.p', 'wb'))
+pk.dump(m, open('Err_file_mean_'+HRS_mu+'_var_'+portion+'_SA_4.p', 'wb'))
 
-with open('Err_file_mean_2.62_var_1_SA_4.pkl', 'wb') as f:
+with open('Err_file_mean_'+HRS_mu+'_var_'+portion+'_SA_4.pkl', 'wb') as f:
   pickle.dump(Err_list, f) 
 
 #with open('Err_file.pkl', 'rb') as f:
