@@ -9,11 +9,13 @@ import pickle
 from bisect import bisect
 import pickle as pk
 import random
-
-cell_LRS_mu = 1.34*np.log(10)
-cell_LRS_sig = 0.06*np.log(10) 
-cell_HRS_mu = 2.62*np.log(10) 
-cell_HRS_sig = 0.38*np.log(10)
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+cell_LRS_mu = 1.34*log(10)
+cell_LRS_sig = 0.06*log(10) 
+cell_HRS_mu = 2.62*log(10)
+cell_HRS_sig = 0.38*log(10)
 vol = 0.6 #voltage
 RRAM_size = sys.argv[1]
 sensing_offset = 0 #v
@@ -33,7 +35,7 @@ def pdf_current(x, mu, sig): ##current
 ##-------show curve-------##
 
 def print_cur(a, b, func, mu, sigma):
-	x = np.arange(a,b,(b-a)/100)
+	x = np.arange(a,b,(b-a)/100000)
 	plt.plot(x, [func(each, mu, sigma) for each in x])
 
 ##-------integral---------##
@@ -45,12 +47,15 @@ def integral(a, b, func, mu, sig):
   pdf = func(xk, mu, sig)
   return integrate.simps(pdf, xk)
 
+#print_cur(0.00001,10000,pdf_log,cell_LRS_mu, cell_LRS_sig)
+#print_cur(0.00001,10000,pdf_log,cell_HRS_mu, cell_HRS_sig)
+#print(pdf_log(416, cell_HRS_mu, cell_HRS_sig))
+#print(integral(0.00001, 10000, pdf_log, float(cell_HRS_mu), float(cell_HRS_sig)))
+print(integral(0.005,0.04, pdf_current, float(cell_LRS_mu), float(cell_LRS_sig)))
+print(integral(0,0.01, pdf_current, float(cell_HRS_mu), float(cell_HRS_sig)))
 #print_cur(0.00001,0.1,pdf_current,cell_LRS_mu, cell_LRS_sig)
 #print_cur(0.00001,0.1,pdf_current,cell_HRS_mu, cell_HRS_sig)
-print(integral(0,0.1, pdf_current, float(cell_LRS_mu), float(cell_LRS_sig)))
-print(integral(0,0.1, pdf_current, float(cell_HRS_mu), float(cell_HRS_sig)))
-
-
+#print_cur(0.00001,1000,pdf_log,cell_HRS_mu, cell_HRS_sig)
 
 ##-----calculate cdf-----##
 
@@ -73,12 +78,11 @@ def cdf_current(a, b, ind):
       cdf_HRS_y.append(prob)
 
 
-cdf_current(0, 0.1, 0) ## LRS
-cdf_current(0, 0.1, 1) ## HRS
-print(cdf_LRS_y[len(cdf_LRS_x)-1])
-print(cdf_HRS_y[len(cdf_HRS_x)-1])
+cdf_current(0, 0.04, 0) ## LRS
+cdf_current(0, 0.04, 1) ## HRS
+#print(cdf_LRS_y[len(cdf_LRS_x)-1])
+#print(cdf_HRS_y[len(cdf_HRS_x)-1])
 #------calculate end-----##
-
 #------monte-carlo-------##
 
 N = 200000
@@ -97,7 +101,7 @@ def I_total(num_L, num_H):
     total = total + cdf_HRS_x[ind_H-1]
   return total 
   
-#fout = open("distribution_data.csv", 'w')
+fout = open("distribution_data.csv", 'w')
 Err_list = np.zeros((int(RRAM_size), int(RRAM_size)+1, int(RRAM_size)+1))
 RRAM_cnt = int(RRAM_size)
 
@@ -109,10 +113,11 @@ for num in range(int(RRAM_size)+1):
   b = int(RRAM_size) - num
   sample_current = []
   print("Now: a->",a," b->",b)
+  fout.write('Now: a->'+str(a)+'b->'+str(b)+'\n')
   for i in range(N):
     cur_total = I_total(a,b)
     sample_current.append(cur_total)
-  
+    fout.write(str(cur_total)+'\n')
   print("sample-end...")
   
   x = []
@@ -123,38 +128,35 @@ for num in range(int(RRAM_size)+1):
   for i in range(len(sample_list)):
     x.append(float(sample_list[i]))
     y.append(float(sample_current.count(float(sample_list[i]))/N))
-  '''
+  ''' 
   #--------output csv-----------##
   fout.write('LRS:'+str(a)+', HRS:'+str(b)+'\n')
   for out_x in range(len(x)):
     fout.write(str(x[out_x])+','+str(y[out_x])+'\n') 
   #-------output csv end--------##
-  ''' 
-  
+  '''
   Data.append([])
   for i in range(len(x)):
     Data[Data_cnt].append((x[i], y[i]))
   Data_cnt += 1
-'''
-if num%3 == 0:
-  plt.plot(x, y, 'ro', alpha=0.3)
-elif num%3 == 1:
-  plt.plot(x, y, 'bo', alpha=0.3)
-elif num%3 == 2:
-  plt.plot(x, y, 'go', alpha=0.3)    
+  '''
+  if num%3 == 0:
+    plt.plot(x, y, 'ro', alpha=0.3)
+  elif num%3 == 1:
+    plt.plot(x, y, 'bo', alpha=0.3)
+  elif num%3 == 2:
+    plt.plot(x, y, 'go', alpha=0.3)    
   print("Plot.end")
-'''
+  '''
 Data_sorted = Data
 #------monte-carlo-------##
 for i in range(len(Data_sorted)):
   Data_sorted[i] = sorted(Data_sorted[i])
 
 
+'''
 
-
-
-
-'''  
+  
 #--------Error part--------##
 print(len(Data_sorted[0]))
 if len(Data_sorted[0]) % 2 ==0:
@@ -184,10 +186,10 @@ for idx in range(ref_cnt):
     right_ref = float(Data_sorted[idx_2][int((len(Data_sorted[idx_2])-1)/2)][0])
   if idx != ref_cnt-1:
     idx_3 = idx_2 + 1 
-  if len(Data_sorted[idx_3]) % 2 ==0:
-    next_ref = float(Data_sorted[idx_3][int(len(Data_sorted[idx_3])/2)][0])
-  else:
-    next_ref = float(Data_sorted[idx_3][int((len(Data_sorted[idx_3])-1)/2)][0])
+    if len(Data_sorted[idx_3]) % 2 ==0:
+      next_ref = float(Data_sorted[idx_3][int(len(Data_sorted[idx_3])/2)][0])
+    else:
+      next_ref = float(Data_sorted[idx_3][int((len(Data_sorted[idx_3])-1)/2)][0])
   else:
     next_ref = 10000 #dont-care
   if idx != 0:
@@ -203,7 +205,7 @@ for idx in range(ref_cnt):
   front_margin_ref=float((front_ref + left_ref)/2)-sensing_offset
   print(margin_ref)
     
-  for current in range(RRAM_size+1):
+  for current in range(int(RRAM_size)+1):
     cnt_left = 0
     cnt_right = 0
     err_left = 0
@@ -215,7 +217,7 @@ for idx in range(ref_cnt):
       err_left = cnt_left / len(Data[current])
       fout.write(str(current)+','+str(idx_2)+','+str(err_left)+'\n')
       print(current,"-->",idx_2,":",err_left)
-      Err_list[RRAM_size-1][current][idx_2] = float(err_left)
+      Err_list[int(RRAM_size)-1][current][idx_2] = float(err_left)
     else:
       for j in range(len(Data[current])):
         if Data[current][j][0] < margin_ref and Data[current][j][0] > front_margin_ref:
@@ -223,7 +225,7 @@ for idx in range(ref_cnt):
       err_right = cnt_right / len(Data[current])
       fout.write(str(current)+','+str(idx)+','+str(err_right)+'\n')
       print(current,"-->",idx,":",err_right)
-      Err_list[RRAM_size-1][current][idx] = float(err_right)
+      Err_list[int(RRAM_size)-1][current][idx] = float(err_right)
 
 if int(RRAM_size)>level_SA:
   for idx_2 in range(ref_cnt+1, int(RRAM_size)+1):
@@ -239,11 +241,11 @@ if int(RRAM_size)>level_SA:
     print(idx_2,"-->",str(level_SA-1),":",err_right)
     fout.write(str(idx_2)+','+str(level_SA)+','+str(err_left)+'\n')
     print(idx_2,"-->",str(level_SA),":",err_left)
-    Err_list[RRAM_size-1][idx_2][int(level_SA)-1] = float(err_right)
-    Err_list[RRAM_size-1][idx_2][int(level_SA)] = float(err_left)
-for row in range(RRAM_size+1):
-  summation = sum(Err_list[RRAM_size-1][row])
-  Err_list[RRAM_size-1][row][row] = 1-summation
+    Err_list[int(RRAM_size)-1][idx_2][int(level_SA)-1] = float(err_right)
+    Err_list[int(RRAM_size)-1][idx_2][int(level_SA)] = float(err_left)
+for row in range(int(RRAM_size)+1):
+  summation = sum(Err_list[int(RRAM_size)-1][row])
+  Err_list[int(RRAM_size)-1][row][row] = 1-summation
 
 print(Err_list)    
 for i in range(Err_list.shape[0]):
@@ -277,5 +279,6 @@ with open('Err_file_mean_2.62_var_1_SA_4.pkl', 'wb') as f:
 #print(mynewlist)
 
 #-------Error part--------##
+plt.xscale('log')
+plt.savefig('monte-2-ref')
 '''
-#plt.savefig('monte-2-ref')
