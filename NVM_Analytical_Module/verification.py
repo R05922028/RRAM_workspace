@@ -51,8 +51,8 @@ def integral(a, b, func, mu, sig):
 #print_cur(0.00001,10000,pdf_log,cell_HRS_mu, cell_HRS_sig)
 #print(pdf_log(416, cell_HRS_mu, cell_HRS_sig))
 #print(integral(0.00001, 10000, pdf_log, float(cell_HRS_mu), float(cell_HRS_sig)))
-print(integral(0.005,0.04, pdf_current, float(cell_LRS_mu), float(cell_LRS_sig)))
-print(integral(0,0.01, pdf_current, float(cell_HRS_mu), float(cell_HRS_sig)))
+print(integral(0.018,0.0415, pdf_current, float(cell_LRS_mu), float(cell_LRS_sig)))
+print(integral(0,0.02, pdf_current, float(cell_HRS_mu), float(cell_HRS_sig)))
 #print_cur(0.00001,0.1,pdf_current,cell_LRS_mu, cell_LRS_sig)
 #print_cur(0.00001,0.1,pdf_current,cell_HRS_mu, cell_HRS_sig)
 #print_cur(0.00001,1000,pdf_log,cell_HRS_mu, cell_HRS_sig)
@@ -78,16 +78,16 @@ def cdf_current(a, b, ind):
       cdf_HRS_y.append(prob)
 
 
-cdf_current(0, 0.04, 0) ## LRS
-cdf_current(0, 0.04, 1) ## HRS
+cdf_current(0.018, 0.0415, 0) ## LRS
+cdf_current(0, 0.02, 1) ## HRS
 #print(cdf_LRS_y[len(cdf_LRS_x)-1])
 #print(cdf_HRS_y[len(cdf_HRS_x)-1])
 #------calculate end-----##
 #------monte-carlo-------##
 
-N = 200000
-#X_total = []
-#Y_total = []
+N = 32000
+X_total = []
+Y_total = []
 #print(current_L)
 #print(cdf_HRS_x[0])
 
@@ -102,7 +102,7 @@ def I_total(num_L, num_H):
   return total 
   
 fout = open("distribution_data.csv", 'w')
-Err_list = np.zeros((int(RRAM_size), int(RRAM_size)+1, int(RRAM_size)+1))
+#Err_list = np.zeros((int(RRAM_size), int(RRAM_size)+1, int(RRAM_size)+1))
 RRAM_cnt = int(RRAM_size)
 
 print("RRAM_size:", RRAM_size)
@@ -119,11 +119,11 @@ for num in range(int(RRAM_size)+1):
     sample_current.append(cur_total)
     fout.write(str(cur_total)+'\n')
   print("sample-end...")
-  
+ 
   x = []
   y = []
   sample_set = set(sample_current)
-  #print('sample_set:\n')
+ #print('sample_set:\n')
   sample_list = [i for i in sample_set]
   for i in range(len(sample_list)):
     x.append(float(sample_list[i]))
@@ -139,7 +139,7 @@ for num in range(int(RRAM_size)+1):
   for i in range(len(x)):
     Data[Data_cnt].append((x[i], y[i]))
   Data_cnt += 1
-  '''
+#  '''
   if num%3 == 0:
     plt.plot(x, y, 'ro', alpha=0.3)
   elif num%3 == 1:
@@ -147,7 +147,7 @@ for num in range(int(RRAM_size)+1):
   elif num%3 == 2:
     plt.plot(x, y, 'go', alpha=0.3)    
   print("Plot.end")
-  '''
+#  '''
 Data_sorted = Data
 #------monte-carlo-------##
 for i in range(len(Data_sorted)):
@@ -277,8 +277,8 @@ with open('Err_file_mean_2.62_var_1_SA_4.pkl', 'wb') as f:
 #with open('Err_file.pkl', 'rb') as f:
 #  mynewlist = pickle.load(f)
 #print(mynewlist)
-
+'''
 #-------Error part--------##
 plt.xscale('log')
 plt.savefig('monte-2-ref')
-'''
+

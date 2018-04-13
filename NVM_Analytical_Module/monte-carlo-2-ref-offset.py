@@ -10,10 +10,15 @@ from bisect import bisect
 import pickle as pk
 import random
 
-cell_LRS_mu = 1.34*np.log(10)
-cell_LRS_sig = 0.06*np.log(10) 
-cell_HRS_mu = 2.62*np.log(10) 
-cell_HRS_sig = 0.38*np.log(10)
+
+LRS_mu = 1.34
+LRS_sig = 0.06
+HRS_mu = 2.62
+HRS_sig = 0.38
+cell_LRS_mu = LRS_mu*np.log(10)
+cell_LRS_sig = LRS_sig*np.log(10) 
+cell_HRS_mu = HRS_mu*np.log(10) 
+cell_HRS_sig = HRS_sig*np.log(10)
 vol = 0.6 #voltage
 RRAM_size = sys.argv[1]
 sensing_offset = 0 #v
@@ -47,8 +52,8 @@ def integral(a, b, func, mu, sig):
 
 #print_cur(0.00001,0.1,pdf_current,cell_LRS_mu, cell_LRS_sig)
 #print_cur(0.00001,0.1,pdf_current,cell_HRS_mu, cell_HRS_sig)
-print(integral(0,0.1, pdf_current, float(cell_LRS_mu), float(cell_LRS_sig)))
-print(integral(0,0.1, pdf_current, float(cell_HRS_mu), float(cell_HRS_sig)))
+print(integral(0.018,0.0415, pdf_current, float(cell_LRS_mu), float(cell_LRS_sig)))
+print(integral(0,0.02, pdf_current, float(cell_HRS_mu), float(cell_HRS_sig)))
 
 
 
@@ -71,17 +76,20 @@ def cdf_current(a, b, ind):
       prob = integral(a,xk[i], pdf_current, float(cell_HRS_mu), float(cell_HRS_sig))
       cdf_HRS_x.append(xk[i])
       cdf_HRS_y.append(prob)
+#LRS current margin
+lower_bound_LRS = vol/(10**(LRS_mu+3*LRS_sig))
+higher_bound_LRS = vol/(10**(LRS_mu-3*LRS_sig))
+#HRS current margin
+lower_bound_HRS = vol/(10**(HRS_mu+3*HRS_sig))
+higher_bound_HRS = vol/(10**(HRS_mu-3*HRS_sig))
 
-
-cdf_current(0, 0.1, 0) ## LRS
-cdf_current(0, 0.1, 1) ## HRS
-print(cdf_LRS_y[len(cdf_LRS_x)-1])
-print(cdf_HRS_y[len(cdf_HRS_x)-1])
+cdf_current(lower_bound_LRS, higher_bound_LRS, 0) ## LRS
+cdf_current(lower_bound_HRS, higher_bound_HRS, 0) ## LRS
 #------calculate end-----##
 
 #------monte-carlo-------##
 
-N = 200000
+N = 32000
 #X_total = []
 #Y_total = []
 #print(current_L)
