@@ -16,13 +16,14 @@ LRS_sig = sys.argv[3]
 HRS_mu = sys.argv[4]
 HRS_sig = sys.argv[5]
 portion = sys.argv[6]
+offset = sys.argv[7]
 
 cell_LRS_mu = float(LRS_mu) * np.log(10)
 cell_LRS_sig = float(LRS_sig)*np.log(10) 
 cell_HRS_mu = float(HRS_mu) *np.log(10) 
 cell_HRS_sig = float(HRS_sig)*np.log(10)
 vol = 0.6 #voltage
-sensing_offset = 0 #v
+sensing_offset = float(offset) #v
 
 #f(x) = (1/sigma*math.sqrt(2pi))* exp(-(log(x)-m)^2/2sigma^2)
 
@@ -77,12 +78,15 @@ def cdf_current(a, b, ind):
       prob = integral(a,xk[i], pdf_current, float(cell_HRS_mu), float(cell_HRS_sig))
       cdf_HRS_x.append(xk[i])
       cdf_HRS_y.append(prob)
+#LRS current margin
+lower_bound_LRS = vol/(10**(LRS_mu+3*LRS_sig))
+higher_bound_LRS = vol/(10**(LRS_mu-3*LRS_sig))
+#HRS current margin
+lower_bound_HRS = vol/(10**(HRS_mu+3*HRS_sig))
+higher_bound_HRS = vol/(10**(HRS_mu-3*HRS_sig))
 
-
-cdf_current(0, 0.1, 0) ## LRS
-cdf_current(0, 0.1, 1) ## HRS
-print(cdf_LRS_y[len(cdf_LRS_x)-1])
-print(cdf_HRS_y[len(cdf_HRS_x)-1])
+cdf_current(lower_bound_LRS, higher_bound_LRS, 0) ## LRS
+cdf_current(lower_bound_HRS, higher_bound_HRS, 1) ## LRS
 #------calculate end-----##
 
 #------monte-carlo-------##

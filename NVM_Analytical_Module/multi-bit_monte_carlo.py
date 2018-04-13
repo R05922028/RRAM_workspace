@@ -9,18 +9,21 @@ import pickle
 from bisect import bisect
 import pickle as pk
 import random
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 
 
-LRS_mu = 1.34
-LRS_sig = 0.06
-HRS_mu = 2.62
-HRS_sig = 0.38
-cell_LRS_mu = LRS_mu*np.log(10)
-cell_LRS_sig = LRS_sig*np.log(10) 
-cell_HRS_mu = HRS_mu*np.log(10) 
-cell_HRS_sig = HRS_sig*np.log(10)
-vol = 0.6 #voltage
 RRAM_size = sys.argv[1]
+cell_1_mu = 1.34*np.log(10)
+cell_1_sig = 0.06*np.log(10)
+cell_2_mu = 1.77*np.log(10)
+cell_2_sig = 0.16*np.log(10)
+cell_3_mu = 2.1*np.log(10)
+cell_3_sig = 0.26*np.log(10)
+cell_4_mu = 2.62*np.log(10) 
+cell_4_sig = 0.38*np.log(10)
+vol = 0.6 #voltage
 sensing_offset = 0 #v
 
 #f(x) = (1/sigma*math.sqrt(2pi))* exp(-(log(x)-m)^2/2sigma^2)
@@ -52,57 +55,72 @@ def integral(a, b, func, mu, sig):
 
 #print_cur(0.00001,0.1,pdf_current,cell_LRS_mu, cell_LRS_sig)
 #print_cur(0.00001,0.1,pdf_current,cell_HRS_mu, cell_HRS_sig)
-print(integral(0.018,0.0415, pdf_current, float(cell_LRS_mu), float(cell_LRS_sig)))
-print(integral(0,0.02, pdf_current, float(cell_HRS_mu), float(cell_HRS_sig)))
+#print(integral(0,0.1, pdf_current, float(cell_LRS_mu), float(cell_LRS_sig)))
+#print(integral(0,0.1, pdf_current, float(cell_HRS_mu), float(cell_HRS_sig)))
 
 
 
 ##-----calculate cdf-----##
 
-cdf_LRS_x = []
-cdf_LRS_y = []
-cdf_HRS_x = []
-cdf_HRS_y = []
+cdf_1_x = []
+cdf_1_y = []
+cdf_2_x = []
+cdf_2_y = []
+cdf_3_x = []
+cdf_3_y = []
+cdf_4_x = []
+cdf_4_y = []
 def cdf_current(a, b, ind):
   h = (b-a)/float(10000)
   xk = [a + i*h for i in range (1,10000)] 
   xk = np.array(xk)
   for i in range(len(xk)):
     if ind == 0:
-      prob = integral(a,xk[i], pdf_current, float(cell_LRS_mu), float(cell_LRS_sig))
-      cdf_LRS_x.append(xk[i])
-      cdf_LRS_y.append(prob)
+      prob = integral(a,xk[i], pdf_current, float(cell_1_mu), float(cell_1_sig))
+      cdf_1_x.append(xk[i])
+      cdf_1_y.append(prob)
+    elif ind == 1:
+      prob = integral(a,xk[i], pdf_current, float(cell_2_mu), float(cell_2_sig))
+      cdf_2_x.append(xk[i])
+      cdf_2_y.append(prob)
+    elif ind == 2:
+      prob = integral(a,xk[i], pdf_current, float(cell_3_mu), float(cell_3_sig))
+      cdf_3_x.append(xk[i])
+      cdf_3_y.append(prob)
     else:
-      prob = integral(a,xk[i], pdf_current, float(cell_HRS_mu), float(cell_HRS_sig))
-      cdf_HRS_x.append(xk[i])
-      cdf_HRS_y.append(prob)
-#LRS current margin
-lower_bound_LRS = vol/(10**(LRS_mu+3*LRS_sig))
-higher_bound_LRS = vol/(10**(LRS_mu-3*LRS_sig))
-#HRS current margin
-lower_bound_HRS = vol/(10**(HRS_mu+3*HRS_sig))
-higher_bound_HRS = vol/(10**(HRS_mu-3*HRS_sig))
+      prob = integral(a,xk[i], pdf_current, float(cell_4_mu), float(cell_4_sig))
+      cdf_4_x.append(xk[i])
+      cdf_4_y.append(prob)
 
-cdf_current(lower_bound_LRS, higher_bound_LRS, 0) ## LRS
-cdf_current(lower_bound_HRS, higher_bound_HRS, 1) ## LRS
+
+cdf_current(0, 0.1, 0) 
+cdf_current(0, 0.1, 1) 
+cdf_current(0, 0.1, 2) 
+cdf_current(0, 0.1, 3) 
 #------calculate end-----##
 
 #------monte-carlo-------##
 
-N = 32000
+N = 200000
 #X_total = []
 #Y_total = []
 #print(current_L)
 #print(cdf_HRS_x[0])
 
-def I_total(num_L, num_H):
+def I_total(num_1, num_2, num_3, num_4):
   total = 0
-  for cnt_L in range(num_L):
-    ind_L = bisect(cdf_LRS_y, np.random.rand(1))
-    total = total + cdf_LRS_x[ind_L-1]
-  for cnt_H in range(num_H):
-    ind_H = bisect(cdf_HRS_y, np.random.rand(1))
-    total = total + cdf_HRS_x[ind_H-1]
+  for cnt_1 in range(num_1):
+    ind = bisect(cdf_1_y, np.random.rand(1))
+    total = total + cdf_1_x[ind-1]
+  for cnt_2 in range(num_2):
+    ind = bisect(cdf_2_y, np.random.rand(1))
+    total = total + cdf_2_x[ind-1]
+  for cnt_3 in range(num_3):
+    ind = bisect(cdf_3_y, np.random.rand(1))
+    total = total + cdf_3_x[ind-1]
+  for cnt_4 in range(num_4):
+    ind = bisect(cdf_4_y, np.random.rand(1))
+    total = total + cdf_4_x[ind-1]
   return total 
   
 #fout = open("distribution_data.csv", 'w')
@@ -113,60 +131,62 @@ for RRAM_size in range(1, RRAM_cnt+1):
   print("RRAM_size:", RRAM_size)
   Data = []
   Data_cnt = 0
-  for num in range(int(RRAM_size)+1):
-    a = num
-    b = int(RRAM_size) - num
-    sample_current = []
-    print("Now: a->",a," b->",b)
-    for i in range(N):
-      cur_total = I_total(a,b)
-      sample_current.append(cur_total)
+  for a in range(int(RRAM_size)+1):
+    for b in range(int(RRAM_size)+1):
+      for c in range(int(RRAM_size)+1):
+        for d in range(int(RRAM_size)+1):
+          if(a+b+c+d) == RRAM_cnt:
+            sample_current = []
+            print("Now:",a,b,c,d)
+            for i in range(N):
+              cur_total = I_total(a,b,c,d)
+              sample_current.append(cur_total)
   
-    print("sample-end...")
+            print("sample-end...")
   
-    x = []
-    y = []
-    sample_set = set(sample_current)
-    #print('sample_set:\n')
-    sample_list = [i for i in sample_set]
-    for i in range(len(sample_list)):
-      x.append(float(sample_list[i]))
-      y.append(float(sample_current.count(float(sample_list[i]))/N))
-    '''
-    #--------output csv-----------##
-    fout.write('LRS:'+str(a)+', HRS:'+str(b)+'\n')
-    for out_x in range(len(x)):
-        fout.write(str(x[out_x])+','+str(y[out_x])+'\n') 
-    #-------output csv end--------##
-    ''' 
-  
-    Data.append([])
-    for i in range(len(x)):
-      Data[Data_cnt].append((x[i], y[i]))
-    Data_cnt += 1
-  '''
-    if num%3 == 0:
-      plt.plot(x, y, 'ro', alpha=0.3)
-    elif num%3 == 1:
-      plt.plot(x, y, 'bo', alpha=0.3)
-    elif num%3 == 2:
-      plt.plot(x, y, 'go', alpha=0.3)    
-    print("Plot.end")
-  '''
+            x = []
+            y = []
+            sample_set = set(sample_current)
+            #print('sample_set:\n')
+            sample_list = [i for i in sample_set]
+            for i in range(len(sample_list)):
+              x.append(float(sample_list[i]))
+              y.append(float(sample_current.count(float(sample_list[i]))/N))
+            '''
+            #--------output csv-----------##
+            fout.write('LRS:'+str(a)+', HRS:'+str(b)+'\n')
+            for out_x in range(len(x)):
+              fout.write(str(x[out_x])+','+str(y[out_x])+'\n') 
+            #-------output csv end--------##
+            ''' 
+        
+            Data.append([])
+            for i in range(len(x)):
+              Data[Data_cnt].append((x[i], y[i]))
+            Data_cnt += 1
+          
+            if a%3 == 0:
+              plt.plot(x, y, 'ro', alpha=0.3)
+            elif a%3 == 1:
+              plt.plot(x, y, 'bo', alpha=0.3)
+            elif a%3 == 2:
+              plt.plot(x, y, 'go', alpha=0.3)    
+            print("Plot.end")
+          
   Data_sorted = Data
   #------monte-carlo-------##
   for i in range(len(Data_sorted)):
     Data_sorted[i] = sorted(Data_sorted[i])
-  
+  ''' 
   #--------Error part--------##
-  '''
+  
   print(len(Data_sorted[0]))
   if len(Data_sorted[0]) % 2 ==0:
     print("mod=0,",len(Data_sorted[0])/2)
     print(Data_sorted[0][int(len(Data_sorted[0])/2)])
   else:
     print(Data_sorted[0][int((len(Data_sorted[0])-1)/2)])
-  '''
+  
   fout = open("error_rate_2_ref.csv", "a+")
   fout.write(str(RRAM_size)+'\n')
   left_ref = 0
@@ -281,5 +301,5 @@ with open('Err_file_mean_2.62_var_1_SA_4.pkl', 'wb') as f:
 #print(mynewlist)
 
 #-------Error part--------##
-
-#plt.savefig('monte-2-ref')
+'''
+plt.savefig('monte-2-ref')
