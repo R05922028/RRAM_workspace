@@ -79,11 +79,11 @@ def cdf_current(a, b, ind):
       cdf_HRS_x.append(xk[i])
       cdf_HRS_y.append(prob)
 #LRS current margin
-lower_bound_LRS = vol/(10**(LRS_mu+3*LRS_sig))
-higher_bound_LRS = vol/(10**(LRS_mu-3*LRS_sig))
+lower_bound_LRS = vol/(10**(float(LRS_mu)+3*float(LRS_sig)))
+higher_bound_LRS = vol/(10**(float(LRS_mu)-3*float(LRS_sig)))
 #HRS current margin
-lower_bound_HRS = vol/(10**(HRS_mu+3*HRS_sig))
-higher_bound_HRS = vol/(10**(HRS_mu-3*HRS_sig))
+lower_bound_HRS = vol/(10**(float(HRS_mu)+3*float(HRS_sig)))
+higher_bound_HRS = vol/(10**(float(HRS_mu)-3*float(HRS_sig)))
 
 cdf_current(lower_bound_LRS, higher_bound_LRS, 0) ## LRS
 cdf_current(lower_bound_HRS, higher_bound_HRS, 1) ## LRS
@@ -91,22 +91,24 @@ cdf_current(lower_bound_HRS, higher_bound_HRS, 1) ## LRS
 
 #------monte-carlo-------##
 
-N = 200000
+N = 32000
 #X_total = []
 #Y_total = []
 #print(current_L)
 #print(cdf_HRS_x[0])
 
+  
 def I_total(num_L, num_H):
   total = 0
   for cnt_L in range(num_L):
-    ind_L = bisect(cdf_LRS_y, np.random.rand(1))
-    total = total + cdf_LRS_x[ind_L-1]
+    seed = np.random.rand(1)
+    ind_L = bisect(cdf_LRS_y, seed*0.997)
+    total = total + cdf_LRS_x[ind_L-2]
   for cnt_H in range(num_H):
-    ind_H = bisect(cdf_HRS_y, np.random.rand(1))
-    total = total + cdf_HRS_x[ind_H-1]
+    seed = np.random.rand(1)
+    ind_H = bisect(cdf_HRS_y, seed*0.997)
+    total = total + cdf_HRS_x[ind_H-2]
   return total 
-  
 #fout = open("distribution_data.csv", 'w')
 Err_list = np.zeros((int(RRAM_size), int(RRAM_size)+1, int(RRAM_size)+1))
 RRAM_cnt = int(RRAM_size)
@@ -273,9 +275,9 @@ for u in range(int(sys.argv[1])):
             m[u][i] += [j]*int((err[u][i][j]-err[u][i][j-1])*100.)
         m[u][i] += [i] * (100-len(m[u][i]))
         random.shuffle(m[u][i])
-pk.dump(m, open('Err_file_mean_'+HRS_mu+'_var_'+portion+'_SA_4.p', 'wb'))
+pk.dump(m, open('Err_file_mean_'+HRS_mu+'_var_'+portion+'_offset_'+offset+'_SA_4.p', 'wb'))
 
-with open('Err_file_mean_'+HRS_mu+'_var_'+portion+'_SA_4.pkl', 'wb') as f:
+with open('Err_file_mean_'+HRS_mu+'_var_'+portion+'_offset_'+offset+'_SA_4.pkl', 'wb') as f:
   pickle.dump(Err_list, f) 
 
 #with open('Err_file.pkl', 'rb') as f:
