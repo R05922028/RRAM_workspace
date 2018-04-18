@@ -17,11 +17,11 @@ import matplotlib.pyplot as plt
 RRAM_size = sys.argv[1]
 cell_1_mu = 1.34*np.log(10)
 cell_1_sig = 0.06*np.log(10)
-cell_2_mu = 1.77*np.log(10)
+cell_2_mu = 1.98*np.log(10)
 cell_2_sig = 0.16*np.log(10)
-cell_3_mu = 2.1*np.log(10)
+cell_3_mu = 2.62*np.log(10)
 cell_3_sig = 0.26*np.log(10)
-cell_4_mu = 2.62*np.log(10) 
+cell_4_mu = 3.25*np.log(10) 
 cell_4_sig = 0.38*np.log(10)
 vol = 0.6 #voltage
 sensing_offset = 0 #v
@@ -93,15 +93,15 @@ def cdf_current(a, b, ind):
       cdf_4_y.append(prob)
 
 
-cdf_current(0, 0.1, 0) 
-cdf_current(0, 0.1, 1) 
-cdf_current(0, 0.1, 2) 
-cdf_current(0, 0.1, 3) 
+cdf_current(0.018, 0.0415, 0) 
+cdf_current(0.003377, 0.03077, 1) 
+cdf_current(0.00144, 0.0158, 2) 
+cdf_current(0, 0.02, 3) 
 #------calculate end-----##
 
 #------monte-carlo-------##
 
-N = 200000
+N = 32000
 #X_total = []
 #Y_total = []
 #print(current_L)
@@ -135,7 +135,7 @@ for RRAM_size in range(1, RRAM_cnt+1):
     for b in range(int(RRAM_size)+1):
       for c in range(int(RRAM_size)+1):
         for d in range(int(RRAM_size)+1):
-          if(a+b+c+d) == RRAM_cnt:
+          if(a+b+c+d) == RRAM_size:
             sample_current = []
             print("Now:",a,b,c,d)
             for i in range(N):
@@ -177,12 +177,10 @@ for RRAM_size in range(1, RRAM_cnt+1):
   #------monte-carlo-------##
   for i in range(len(Data_sorted)):
     Data_sorted[i] = sorted(Data_sorted[i])
-  ''' 
-  #--------Error part--------##
+  #--------Error part------##
   
-  print(len(Data_sorted[0]))
   if len(Data_sorted[0]) % 2 ==0:
-    print("mod=0,",len(Data_sorted[0])/2)
+#    print("mod=0,",len(Data_sorted[0])/2)
     print(Data_sorted[0][int(len(Data_sorted[0])/2)])
   else:
     print(Data_sorted[0][int((len(Data_sorted[0])-1)/2)])
@@ -193,8 +191,8 @@ for RRAM_size in range(1, RRAM_cnt+1):
   right_ref = 0
   level_SA = (2**4)-1
    
-  if int(RRAM_size) < level_SA+1:
-    ref_cnt = int(RRAM_size)
+  if (int(RRAM_size)*3+1) < level_SA+1:
+    ref_cnt = (3*int(RRAM_size))
   else:
     ref_cnt = level_SA
   for idx in range(ref_cnt):
@@ -228,7 +226,7 @@ for RRAM_size in range(1, RRAM_cnt+1):
     front_margin_ref=float((front_ref + left_ref)/2)-sensing_offset
     print(margin_ref)
     
-    for current in range(RRAM_size+1):
+    for current in range(3*RRAM_size+1):
       cnt_left = 0
       cnt_right = 0
       err_left = 0
@@ -240,7 +238,7 @@ for RRAM_size in range(1, RRAM_cnt+1):
         err_left = cnt_left / len(Data[current])
         fout.write(str(current)+','+str(idx_2)+','+str(err_left)+'\n')
         print(current,"-->",idx_2,":",err_left)
-        Err_list[RRAM_size-1][current][idx_2] = float(err_left)
+        #Err_list[RRAM_size-1][current][idx_2] = float(err_left)
       else:
         for j in range(len(Data[current])):
           if Data[current][j][0] < margin_ref and Data[current][j][0] > front_margin_ref:
@@ -248,7 +246,7 @@ for RRAM_size in range(1, RRAM_cnt+1):
         err_right = cnt_right / len(Data[current])
         fout.write(str(current)+','+str(idx)+','+str(err_right)+'\n')
         print(current,"-->",idx,":",err_right)
-        Err_list[RRAM_size-1][current][idx] = float(err_right)
+        #Err_list[RRAM_size-1][current][idx] = float(err_right)
 
   if int(RRAM_size)>level_SA:
     for idx_2 in range(ref_cnt+1, int(RRAM_size)+1):
@@ -264,20 +262,20 @@ for RRAM_size in range(1, RRAM_cnt+1):
       print(idx_2,"-->",str(level_SA-1),":",err_right)
       fout.write(str(idx_2)+','+str(level_SA)+','+str(err_left)+'\n')
       print(idx_2,"-->",str(level_SA),":",err_left)
-      Err_list[RRAM_size-1][idx_2][int(level_SA)-1] = float(err_right)
-      Err_list[RRAM_size-1][idx_2][int(level_SA)] = float(err_left)
-  for row in range(RRAM_size+1):
-    summation = sum(Err_list[RRAM_size-1][row])
-    Err_list[RRAM_size-1][row][row] = 1-summation
-print(Err_list)    
-for i in range(Err_list.shape[0]):
-  for j in range(i+2):
-    prob = Err_list[i][j][0]
-    Err_list[i][j][0] = 0
-    for k in range(i+2):
-      prob += Err_list[i][j][k]
-      Err_list[i][j][k] = prob
-print(Err_list)    
+      #Err_list[RRAM_size-1][idx_2][int(level_SA)-1] = float(err_right)
+      #Err_list[RRAM_size-1][idx_2][int(level_SA)] = float(err_left)
+  #for row in range(RRAM_size+1):
+    #summation = sum(Err_list[RRAM_size-1][row])
+    #Err_list[RRAM_size-1][row][row] = 1-summation
+#print(Err_list)    
+#for i in range(Err_list.shape[0]):
+  #for j in range(i+2):
+    #prob = Err_list[i][j][0]
+    #Err_list[i][j][0] = 0
+    #for k in range(i+2):
+      #prob += Err_list[i][j][k]
+      #Err_list[i][j][k] = prob
+#print(Err_list)    
 
 #New format
 err = Err_list
@@ -291,9 +289,9 @@ for u in range(int(sys.argv[1])):
             m[u][i] += [j]*int((err[u][i][j]-err[u][i][j-1])*100.)
         m[u][i] += [i] * (100-len(m[u][i]))
         random.shuffle(m[u][i])
-pk.dump(m, open('Err_file_mean_2.62_var_1_SA_4.p', 'wb'))
+pk.dump(m, open('mult-bit.p', 'wb'))
 
-with open('Err_file_mean_2.62_var_1_SA_4.pkl', 'wb') as f:
+with open('multi-bit.pkl', 'wb') as f:
   pickle.dump(Err_list, f) 
 
 #with open('Err_file.pkl', 'rb') as f:
@@ -301,5 +299,4 @@ with open('Err_file_mean_2.62_var_1_SA_4.pkl', 'wb') as f:
 #print(mynewlist)
 
 #-------Error part--------##
-'''
-plt.savefig('monte-2-ref')
+#plt.savefig('monte-2-ref')

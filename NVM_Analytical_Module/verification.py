@@ -12,10 +12,14 @@ import random
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-cell_LRS_mu = 1.34*log(10)
-cell_LRS_sig = 0.06*log(10) 
-cell_HRS_mu = 2.62*log(10)
-cell_HRS_sig = 0.38*log(10)
+LRS_mu = 1.34
+LRS_sig = 0.02
+HRS_mu = 2.62
+HRS_sig = 0.12
+cell_LRS_mu = LRS_mu*np.log(10)
+cell_LRS_sig = LRS_sig*np.log(10) 
+cell_HRS_mu = HRS_mu*np.log(10) 
+cell_HRS_sig = HRS_sig*np.log(10)
 vol = 0.6 #voltage
 RRAM_size = sys.argv[1]
 sensing_offset = 0 #v
@@ -77,11 +81,18 @@ def cdf_current(a, b, ind):
       cdf_HRS_x.append(xk[i])
       cdf_HRS_y.append(prob)
 
+#LRS current margin
+lower_bound_LRS = vol/(10**(LRS_mu+3*LRS_sig))
+higher_bound_LRS = vol/(10**(LRS_mu-3*LRS_sig))
+#HRS current margin
+lower_bound_HRS = vol/(10**(HRS_mu+3*HRS_sig))
+higher_bound_HRS = vol/(10**(HRS_mu-3*HRS_sig))
 
-cdf_current(0.018, 0.0415, 0) ## LRS
-cdf_current(0, 0.02, 1) ## HRS
-#print(cdf_LRS_y[len(cdf_LRS_x)-1])
-#print(cdf_HRS_y[len(cdf_HRS_x)-1])
+cdf_current(lower_bound_LRS, higher_bound_LRS, 0) ## LRS
+cdf_current(lower_bound_HRS, higher_bound_HRS, 1) ## LRS
+
+print(cdf_LRS_y[len(cdf_LRS_x)-1])
+#print(cdf_HRS_x[len(cdf_HRS_x)-1])
 #------calculate end-----##
 #------monte-carlo-------##
 
@@ -94,11 +105,13 @@ Y_total = []
 def I_total(num_L, num_H):
   total = 0
   for cnt_L in range(num_L):
-    ind_L = bisect(cdf_LRS_y, np.random.rand(1))
-    total = total + cdf_LRS_x[ind_L-1]
+    seed = np.random.rand(1)
+    ind_L = bisect(cdf_LRS_y, seed*0.997)
+    total = total + cdf_LRS_x[ind_L-2]
   for cnt_H in range(num_H):
-    ind_H = bisect(cdf_HRS_y, np.random.rand(1))
-    total = total + cdf_HRS_x[ind_H-1]
+    seed = np.random.rand(1)
+    ind_H = bisect(cdf_HRS_y, seed*0.997)
+    total = total + cdf_HRS_x[ind_H-2]
   return total 
   
 fout = open("distribution_data.csv", 'w')
