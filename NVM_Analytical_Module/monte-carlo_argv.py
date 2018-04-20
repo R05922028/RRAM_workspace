@@ -17,6 +17,7 @@ HRS_mu = sys.argv[4]
 HRS_sig = sys.argv[5]
 portion = sys.argv[6]
 offset = sys.argv[7]
+SA_bit = sys.argv[8]
 
 cell_LRS_mu = float(LRS_mu) * np.log(10)
 cell_LRS_sig = float(LRS_sig)*np.log(10) 
@@ -175,7 +176,7 @@ for RRAM_size in range(1, RRAM_cnt+1):
   fout.write(str(RRAM_size)+'\n')
   left_ref = 0
   right_ref = 0
-  level_SA = (2**4)-1
+  level_SA = (2**int(SA_bit))-1
    
   if int(RRAM_size) < level_SA+1:
     ref_cnt = int(RRAM_size)
@@ -275,9 +276,9 @@ for u in range(int(sys.argv[1])):
             m[u][i] += [j]*int((err[u][i][j]-err[u][i][j-1])*100.)
         m[u][i] += [i] * (100-len(m[u][i]))
         random.shuffle(m[u][i])
-pk.dump(m, open('Err_file_mean_'+HRS_mu+'_var_'+portion+'_offset_'+offset+'_SA_4.p', 'wb'))
+pk.dump(m, open('Err_file_mean_'+HRS_mu+'_var_'+portion+'_offset_'+offset+'_SA_'+SA_bit+'.p', 'wb'))
 
-with open('Err_file_mean_'+HRS_mu+'_var_'+portion+'_offset_'+offset+'_SA_4.pkl', 'wb') as f:
+with open('Err_file_mean_'+HRS_mu+'_var_'+portion+'_offset_'+offset+'_SA_'+SA_bit+'.pkl', 'wb') as f:
   pickle.dump(Err_list, f) 
 
 #with open('Err_file.pkl', 'rb') as f:
