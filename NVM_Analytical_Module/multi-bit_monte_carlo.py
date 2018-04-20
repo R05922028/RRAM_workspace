@@ -94,9 +94,9 @@ def cdf_current(a, b, ind):
 
 
 cdf_current(0.018, 0.0415, 0) 
-cdf_current(0.003377, 0.03077, 1) 
-cdf_current(0.00144, 0.0158, 2) 
-cdf_current(0, 0.02, 3) 
+cdf_current(0.0021, 0.019, 1) 
+cdf_current(0.00024, 0.0087, 2) 
+cdf_current(0.000024, 0.00466, 3) 
 #------calculate end-----##
 
 #------monte-carlo-------##
