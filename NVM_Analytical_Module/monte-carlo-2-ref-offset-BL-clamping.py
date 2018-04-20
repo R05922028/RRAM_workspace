@@ -100,10 +100,12 @@ N = 32000
 def I_total(num_L, num_H):
   total = 0
   for cnt_L in range(num_L):
-    ind_L = bisect(cdf_LRS_y, np.random.rand(1))
+    seed = np.random.rand(1)
+    ind_L = bisect(cdf_LRS_y, seed*0.997)
     total = total + cdf_LRS_x[ind_L-1]
   for cnt_H in range(num_H):
-    ind_H = bisect(cdf_HRS_y, np.random.rand(1))
+    seed = np.random.rand(1)
+    ind_H = bisect(cdf_HRS_y, seed*0.997)
     total = total + cdf_HRS_x[ind_H-1]
   return total 
   
