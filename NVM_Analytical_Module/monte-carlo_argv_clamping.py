@@ -81,11 +81,11 @@ def cdf_current(a, b, ind):
       cdf_HRS_x.append(xk[i])
       cdf_HRS_y.append(prob)
 #LRS current margin
-lower_bound_LRS = LRS_vol/(10**(LRS_mu+3*LRS_sig))
-higher_bound_LRS = LRS_vol/(10**(LRS_mu-3*LRS_sig))
+lower_bound_LRS = LRS_vol/(10**(float(LRS_mu)+3*float(LRS_sig)))
+higher_bound_LRS = LRS_vol/(10**(float(LRS_mu)-3*float(LRS_sig)))
 #HRS current margin
-lower_bound_HRS = HRS_vol/(10**(HRS_mu+3*HRS_sig))
-higher_bound_HRS = HRS_vol/(10**(HRS_mu-3*HRS_sig))
+lower_bound_HRS = HRS_vol/(10**(float(HRS_mu)+3*float(HRS_sig)))
+higher_bound_HRS = HRS_vol/(10**(float(HRS_mu)-3*float(HRS_sig)))
 
 cdf_current(lower_bound_LRS, higher_bound_LRS, 0) ## LRS
 cdf_current(lower_bound_HRS, higher_bound_HRS, 1) ## LRS
