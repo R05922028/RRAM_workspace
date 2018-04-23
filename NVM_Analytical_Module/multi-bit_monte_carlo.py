@@ -189,7 +189,7 @@ for RRAM_size in range(1, RRAM_cnt+1):
   fout.write(str(RRAM_size)+'\n')
   left_ref = 0
   right_ref = 0
-  level_SA = (2**4)-1
+  level_SA = (2**5)-1
    
   if (int(RRAM_size)*3+1) < level_SA+1:
     ref_cnt = (3*int(RRAM_size))

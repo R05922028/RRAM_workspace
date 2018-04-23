@@ -25,7 +25,7 @@ cell_HRS_mu = float(HRS_mu) *np.log(10)
 cell_HRS_sig = float(HRS_sig)*np.log(10)
 vol = 0.6 #voltage
 sensing_offset = float(offset) #v
-#offset_list = np.array([-0.000132, -0.000265, 0])
+offset_list = np.array([-0.000265, -0.000397, 0])
 
 #f(x) = (1/sigma*math.sqrt(2pi))* exp(-(log(x)-m)^2/2sigma^2)
 
@@ -209,14 +209,12 @@ for RRAM_size in range(1, RRAM_cnt+1):
         frontt_ref = float(Data_sorted[idx_0][int((len(Data_sorted[idx_0])-1)/2)][0])
     else:
       front_ref = 0     
-    '''
     if idx == 0:
       sensing_offset = offset_list[0]
     elif idx == 1 or idx == 2:
       sensing_offset = offset_list[1]
     else:
       sensing_offset = offset_list[2]
-    '''
     margin_ref=float((left_ref + right_ref)/2)- sensing_offset
     next_margin_ref=float((next_ref + right_ref)/2)- sensing_offset
     front_margin_ref=float((front_ref + left_ref)/2)-sensing_offset

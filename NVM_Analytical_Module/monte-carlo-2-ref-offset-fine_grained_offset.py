@@ -10,22 +10,18 @@ from bisect import bisect
 import pickle as pk
 import random
 
-RRAM_size = sys.argv[1]
-LRS_mu = sys.argv[2]
-LRS_sig = sys.argv[3]
-HRS_mu = sys.argv[4]
-HRS_sig = sys.argv[5]
-portion = sys.argv[6]
-offset = sys.argv[7]
-SA_bit = sys.argv[8]
 
-cell_LRS_mu = float(LRS_mu) * np.log(10)
-cell_LRS_sig = float(LRS_sig)*np.log(10) 
-cell_HRS_mu = float(HRS_mu) *np.log(10) 
-cell_HRS_sig = float(HRS_sig)*np.log(10)
+LRS_mu = 1.34
+LRS_sig = 0.06
+HRS_mu = 2.62
+HRS_sig = 0.38
+cell_LRS_mu = LRS_mu*np.log(10)
+cell_LRS_sig = LRS_sig*np.log(10) 
+cell_HRS_mu = HRS_mu*np.log(10) 
+cell_HRS_sig = HRS_sig*np.log(10)
 vol = 0.6 #voltage
-sensing_offset = float(offset) #v
-#offset_list = np.array([-0.000132, -0.000265, 0])
+RRAM_size = sys.argv[1]
+sensing_offset = 0 #v
 
 #f(x) = (1/sigma*math.sqrt(2pi))* exp(-(log(x)-m)^2/2sigma^2)
 
@@ -56,8 +52,8 @@ def integral(a, b, func, mu, sig):
 
 #print_cur(0.00001,0.1,pdf_current,cell_LRS_mu, cell_LRS_sig)
 #print_cur(0.00001,0.1,pdf_current,cell_HRS_mu, cell_HRS_sig)
-print(integral(0,0.1, pdf_current, float(cell_LRS_mu), float(cell_LRS_sig)))
-print(integral(0,0.1, pdf_current, float(cell_HRS_mu), float(cell_HRS_sig)))
+print(integral(0.018,0.0415, pdf_current, float(cell_LRS_mu), float(cell_LRS_sig)))
+print(integral(0,0.02, pdf_current, float(cell_HRS_mu), float(cell_HRS_sig)))
 
 
 
@@ -81,11 +77,11 @@ def cdf_current(a, b, ind):
       cdf_HRS_x.append(xk[i])
       cdf_HRS_y.append(prob)
 #LRS current margin
-lower_bound_LRS = vol/(10**(float(LRS_mu)+3*float(LRS_sig)))
-higher_bound_LRS = vol/(10**(float(LRS_mu)-3*float(LRS_sig)))
+lower_bound_LRS = vol/(10**(LRS_mu+3*LRS_sig))
+higher_bound_LRS = vol/(10**(LRS_mu-3*LRS_sig))
 #HRS current margin
-lower_bound_HRS = vol/(10**(float(HRS_mu)+3*float(HRS_sig)))
-higher_bound_HRS = vol/(10**(float(HRS_mu)-3*float(HRS_sig)))
+lower_bound_HRS = vol/(10**(HRS_mu+3*HRS_sig))
+higher_bound_HRS = vol/(10**(HRS_mu-3*HRS_sig))
 
 cdf_current(lower_bound_LRS, higher_bound_LRS, 0) ## LRS
 cdf_current(lower_bound_HRS, higher_bound_HRS, 1) ## LRS
@@ -99,18 +95,18 @@ N = 32000
 #print(current_L)
 #print(cdf_HRS_x[0])
 
-  
 def I_total(num_L, num_H):
   total = 0
   for cnt_L in range(num_L):
     seed = np.random.rand(1)
     ind_L = bisect(cdf_LRS_y, seed*0.997)
-    total = total + cdf_LRS_x[ind_L-2]
+    total = total + cdf_LRS_x[ind_L-1]
   for cnt_H in range(num_H):
     seed = np.random.rand(1)
     ind_H = bisect(cdf_HRS_y, seed*0.997)
-    total = total + cdf_HRS_x[ind_H-2]
+    total = total + cdf_HRS_x[ind_H-1]
   return total 
+  
 #fout = open("distribution_data.csv", 'w')
 Err_list = np.zeros((int(RRAM_size), int(RRAM_size)+1, int(RRAM_size)+1))
 RRAM_cnt = int(RRAM_size)
@@ -177,7 +173,7 @@ for RRAM_size in range(1, RRAM_cnt+1):
   fout.write(str(RRAM_size)+'\n')
   left_ref = 0
   right_ref = 0
-  level_SA = (2**int(SA_bit))-1
+  level_SA = (2**4)-1
    
   if int(RRAM_size) < level_SA+1:
     ref_cnt = int(RRAM_size)
@@ -209,14 +205,6 @@ for RRAM_size in range(1, RRAM_cnt+1):
         frontt_ref = float(Data_sorted[idx_0][int((len(Data_sorted[idx_0])-1)/2)][0])
     else:
       front_ref = 0     
-    '''
-    if idx == 0:
-      sensing_offset = offset_list[0]
-    elif idx == 1 or idx == 2:
-      sensing_offset = offset_list[1]
-    else:
-      sensing_offset = offset_list[2]
-    '''
     margin_ref=float((left_ref + right_ref)/2)- sensing_offset
     next_margin_ref=float((next_ref + right_ref)/2)- sensing_offset
     front_margin_ref=float((front_ref + left_ref)/2)-sensing_offset
@@ -285,9 +273,9 @@ for u in range(int(sys.argv[1])):
             m[u][i] += [j]*int((err[u][i][j]-err[u][i][j-1])*100.)
         m[u][i] += [i] * (100-len(m[u][i]))
         random.shuffle(m[u][i])
-pk.dump(m, open('Err_file_mean_'+HRS_mu+'_var_'+portion+'_offset_'+offset+'_SA_'+SA_bit+'.p', 'wb'))
+pk.dump(m, open('Err_file_mean_2.62_var_1_SA_4.p', 'wb'))
 
-with open('Err_file_mean_'+HRS_mu+'_var_'+portion+'_offset_'+offset+'_SA_'+SA_bit+'.pkl', 'wb') as f:
+with open('Err_file_mean_2.62_var_1_SA_4.pkl', 'wb') as f:
   pickle.dump(Err_list, f) 
 
 #with open('Err_file.pkl', 'rb') as f:
